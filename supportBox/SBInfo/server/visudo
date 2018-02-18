@@ -1,2 +1,4 @@
 www-data   ALL=(ALL) NOPASSWD: /usr/sbin/chpasswd
 www-data   ALL=(ALL) NOPASSWD: /usr/bin/supervisorctl
+www-data   ALL=(pi) NOPASSWD: /usr/bin/ssh-keygen
+www-data   ALL=(pi) NOPASSWD: /bin/rm
