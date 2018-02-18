@@ -1,0 +1,2 @@
+www-data   ALL=(ALL) NOPASSWD: /usr/sbin/chpasswd
+www-data   ALL=(ALL) NOPASSWD: /usr/bin/supervisorctl
