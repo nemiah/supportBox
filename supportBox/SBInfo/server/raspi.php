@@ -92,19 +92,20 @@ $C->close();
 $serial = util::serial();
 $realm = "supportBox_1";
 $token = $RToken->wert;
-$url = "wss://venus.supportbox.io:4444/";
+#$url = "wss://venus.supportbox.io:4444/";
 #$url = "ws://192.168.7.77:4444/";
 #$url = "ws://websocket03.furtmeier.it:4444/";
+$url = "ws://venus.supportbox.io:4444/";
 $seconds = 60 * 20;
 
-Thruway\Logging\Logger::set(new Psr\Log\NullLogger());
+#Thruway\Logging\Logger::set(new Psr\Log\NullLogger());
 $connection = new \Thruway\Connection([
 	"realm"   => $realm,
 	"url"     => $url
 ]);
 
 $client = $connection->getClient();
-$client->addClientAuthenticator(new ClientPhimAuthenticator($realm, "phimUser", $token));
+#$client->addClientAuthenticator(new ClientPhimAuthenticator($realm, "phimUser", $token));
 
 $connection->on('error', function($reason){
 	print_r($reason);

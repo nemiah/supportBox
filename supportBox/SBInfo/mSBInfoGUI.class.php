@@ -19,24 +19,6 @@
  */
 
 class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
-	private function serial() {
-		$cpuinfo = file_get_contents("/proc/cpuinfo");
-
-		$ex = explode("\n", trim($cpuinfo));
-
-		$info = array();
-		foreach($ex AS $line){
-				$e = explode(":", $line);
-				if(count($e) < 2)
-						continue;
-
-				$info[trim($e[0])] = trim($e[1]);
-		}
-		if(isset($info["Serial"]))
-			return $info["Serial"];
-
-		return rand(10000, 99999);
-	}
 	
 	public function getHTML($id, $page){
 		$T = new HTMLTable(2);
@@ -69,9 +51,10 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 		$result = exec("sudo -u pi ssh-keygen -lf /home/pi/.ssh/id_rsa.pub");
 		$content = explode(' ', $result);
 		
-		$T->addLV("Seriennummer:", $this->serial());
+		$T->addLV("Seriennummer:", SBInfo::serial());
 		$T->addLV("supportBox Version:", Applications::i()->getRunningVersion());
 		$T->addLV("Cloud:", $B.mUserdata::getGlobalSettingValue("SBCloud", ""));
+		$T->addLV("E-Mail:", mUserdata::getGlobalSettingValue("SBEMail", ""));
 		$T->addLV("Uptime:", $uptime);
 		$T->addLV("Token:", $BT."<div style=\"width:calc(100% - 25px);overflow:hidden;text-overflow:ellipsis;\">".mUserdata::getGlobalSettingValue("SBToken", "")."</div>");
 		$T->addLV("SSH-Passwort (pi):", $BP."<div style=\"width:calc(100% - 25px);overflow:hidden;text-overflow:ellipsis;\">".mUserdata::getGlobalSettingValue("SBSSHPass", "")."</div>");
@@ -92,25 +75,22 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 	}
 
 	public function status($echo = false){
-		exec("sudo /usr/bin/supervisorctl status", $output);
-		preg_match("/box[ ]+([A-Z]+)[ ]+pid/", $output[0], $matches);
-		
-		if($echo)
-			echo $matches[1];
-		
-		return $matches[1];
-		#supportBox:supportbox            RUNNING   pid 12988, uptime 1:51:01
+		return SBInfo::status($echo);
 	}
 	
 	public function cloudPopup(){
 		$F = new HTMLForm("cloudReg", array(
 			"cloud",
+			"email",
 			"comment"
 		));
 		
 		$F->getTable()->setColWidth(1, 120);
 		
+		$F->setLabel("email", "E-Mail");
 		$F->setLabel("comment", "Kommentar");
+		
+		$F->setDescriptionField("email", "Diese E-Mail-Adresse wird von dieser supportBox bei Problemen benachrichtigt (solange eine Internetverbidung besteht)");
 		
 		$F->setDescriptionField("cloud", "Bitte tragen Sie den Furtmeier.IT Cloud-Zugang ein, wie er im Browser hinter wolke_ oder app_ angegeben ist.");
 		$F->setValue("cloud", mUserdata::getGlobalSettingValue("SBCloud", ""));
@@ -120,7 +100,7 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 		
 		$B = new Button("Speichern", "save");
 		$B->style("margin:10px;float:right;");
-		$B->onclick("contentManager.rmePCR('mSBInfo', '-1', 'cloudSave', [$('cloudReg').cloud.value, $('cloudReg').comment.value], function(t){ \$j('#editDetailsContentmSBInfo').html(t.responseText); contentManager.reloadFrame('contentRight'); }, '', true, function(){});");
+		$B->onclick("contentManager.rmePCR('mSBInfo', '-1', 'cloudSave', [$('cloudReg').cloud.value, $('cloudReg').email.value, $('cloudReg').comment.value], function(t){ \$j('#editDetailsContentmSBInfo').html(t.responseText); contentManager.reloadFrame('contentRight'); }, '', true, function(){});");
 		$B->loading();
 		
 		echo $B;
@@ -139,7 +119,7 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 	}
 	
 	public function tokenRefresh($noJs = false){
-		$data = file_get_contents("https://cloud9.furtmeier.it/ubiquitous/CustomerPage/?D=supportBox/SBDevice&cloud=".mUserdata::getGlobalSettingValue("SBCloud", "")."&method=token&serial=".$this->serial());
+		$data = file_get_contents(SBInfo::$server."/ubiquitous/CustomerPage/?D=supportBox/SBDevice&cloud=".mUserdata::getGlobalSettingValue("SBCloud", "")."&method=token&serial=".SBInfo::serial());
 		$data = json_decode($data);
 		
 		mUserdata::setUserdataS("SBToken", $data->data, "", -1);
@@ -154,7 +134,7 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 		exec("sudo /usr/bin/supervisorctl restart all", $output);
 		#print_r($output);
 		sleep(5);
-		if($this->status() != "RUNNING")
+		if(SBInfo::status() != "RUNNING")
 			echo "<p class=\"error\">Supervisor-Fehler: ". implode("<br>", $output)."</p>";
 		else
 			echo "<p class=\"confirm\">Supervisor neu gestartet</p>";
@@ -163,8 +143,8 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 			echo OnEvent::script(OnEvent::reload("Right"));
 	}
 	
-	public function cloudSave($cloudID, $comment = ""){
-		$data = file_get_contents("https://cloud9.furtmeier.it/ubiquitous/CustomerPage/?D=supportBox/SBDevice&cloud=$cloudID&method=check&serial=".$this->serial());
+	public function cloudSave($cloudID, $email = "", $comment = ""){
+		$data = file_get_contents(SBInfo::$server."/ubiquitous/CustomerPage/?D=supportBox/SBDevice&cloud=$cloudID&method=check&serial=".SBInfo::serial());
 		$data = json_decode($data);
 		if($data->status == "OK"){
 			echo "<p class=\"error\">".$data->message."</p>";
@@ -173,11 +153,23 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 			
 		$this->keyRefresh();
 		
+		$aliases = "postmaster:    root
+root: pi
+";
+
+		if(trim($email) != "")
+			$aliases .= "pi: $email
+";
+		
+		exec("echo \"$aliases\" | sudo tee /etc/aliases > /dev/null");
+		exec("sudo postalias /etc/aliases");
+		
 		$result = exec('sudo -u pi ssh-keygen -lf /home/pi/.ssh/id_rsa.pub');
 		$content = explode(' ', $result);
 				
 		mUserdata::setUserdataS("SBCloud", $cloudID, "", -1);
-		$data = file_get_contents("https://cloud9.furtmeier.it/ubiquitous/CustomerPage/?D=supportBox/SBDevice&cloud=$cloudID&method=register&serial=".$this->serial()."&comment=". urlencode($comment)."&pubkey=".urlencode(file_get_contents("/home/pi/.ssh/id_rsa.pub"))."&fingerprint=". urlencode($content[1]));
+		mUserdata::setUserdataS("SBEMail", $email, "", -1);
+		$data = file_get_contents(SBInfo::$server."/ubiquitous/CustomerPage/?D=supportBox/SBDevice&cloud=$cloudID&method=register&serial=".SBInfo::serial()."&comment=". urlencode($comment)."&pubkey=".urlencode(file_get_contents("/home/pi/.ssh/id_rsa.pub"))."&fingerprint=". urlencode($content[1]));
 		$data = json_decode($data);
 		
 		if($data->status == "Error"){
@@ -201,6 +193,12 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 		
 		exec("sudo -u pi ssh-keygen -q -N \"\" -f ~/.ssh/id_rsa -f /home/pi/.ssh/id_rsa");
 		
+		$result = exec('sudo -u pi ssh-keygen -lf /home/pi/.ssh/id_rsa.pub');
+		$content = explode(' ', $result);
+		
+		exec("echo \"relay.supportbox.io ".ltrim(SBInfo::serial(), "0").":".$content[1]."\" | sudo tee /etc/postfix/sasl_passwd  > /dev/null");
+		exec("sudo postmap /etc/postfix/sasl_passwd");
+
 		echo "<p class=\"confirm\">SSH-Key erzeugt!</p>";
 	}
 }

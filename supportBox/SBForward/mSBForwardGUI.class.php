@@ -29,7 +29,7 @@ class mSBForwardGUI extends anyC implements iGUIHTMLMP2 {
 
 		$gui->name("Weiterleitung");
 		
-		$gui->attributes(array());
+		$gui->attributes(array("SBForwardName", "SBForwardIP", "SBForwardPort"));
 		
 		return $gui->getBrowserHTML($id);
 	}
