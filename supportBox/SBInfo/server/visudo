@@ -5,3 +5,5 @@ www-data   ALL=(pi) NOPASSWD: /bin/rm
 www-data   ALL=(ALL) NOPASSWD: /usr/bin/tee
 www-data   ALL=(ALL) NOPASSWD: /usr/sbin/postmap
 www-data   ALL=(ALL) NOPASSWD: /usr/sbin/postalias
+www-data   ALL=(pi) NOPASSWD: /usr/bin/git
+www-data   ALL=(pi) NOPASSWD: /usr/bin/php

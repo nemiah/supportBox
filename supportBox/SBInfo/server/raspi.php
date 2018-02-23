@@ -7,7 +7,7 @@ util::log("-------------------------------------------");
 util::log("Started...");
 
 util::log("Sleeping 60 sec");
-sleep(60);
+#sleep(60);
 util::log("Go...");
 
 class OnAction {
@@ -78,7 +78,11 @@ class OnAction {
     }
 	
 	public static function doUpdate(){
+		exec("cd /var/www/html && sudo -u pi git pull origin master", $output1);
 		
+		exec("sudo -u pi php /var/www/html/update.php", $output2);
+		
+		return "git pull origin master:\n".implode("\n", $output1)."\n\nphp /var/www/html/update.php:\n".implode("\n", $output2);
 	}
 	
 	public static function getVersion(){
@@ -167,11 +171,11 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
 	});
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".doUpdate", function(){
-		return OnAction::doUpdate();
+		return util::ok("", OnAction::doUpdate());
 	});
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".getVersion", function(){
-		return OnAction::getVersion();
+		return util::ok("", OnAction::getVersion());
 	});
 	
 });
