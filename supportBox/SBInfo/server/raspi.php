@@ -2,10 +2,13 @@
 require '/home/pi/thruway/vendor/autoload.php';
 require_once __DIR__."/../../../libraries/PhpFileDB.class.php";
 require_once __DIR__."/util.php";
-require_once __DIR__."/auth.php";
 
 util::log("-------------------------------------------");
 util::log("Started...");
+
+util::log("Sleeping 60 sec");
+sleep(60);
+util::log("Go...");
 
 class OnAction {
 	public static function connectPort($args) {
@@ -48,7 +51,7 @@ class OnAction {
 		return util::ok("Verbindung abgebaut");
     }
 	
-	public static function getConnections($call, $session, $serial) {
+	public static function getConnections() {
 		$C = util::dbConnection();
 		$Q = $C->query("SELECT * FROM SBForward");
 		
@@ -73,6 +76,16 @@ class OnAction {
 		#print_r($call); //do nothing, that's fine!
 		return null;
     }
+	
+	public static function doUpdate(){
+		
+	}
+	
+	public static function getVersion(){
+		require_once __DIR__."/../../../applications/supportBoxApplication.class.php";
+		$A = new supportBoxApplication();
+		return $A->registerVersion();
+	}
 }
 
 $C = util::dbConnection();
@@ -92,33 +105,26 @@ $C->close();
 $serial = util::serial();
 $realm = "supportBox_1";
 $token = $RToken->wert;
-#$url = "wss://venus.supportbox.io:4444/";
-#$url = "ws://192.168.7.77:4444/";
-#$url = "ws://websocket03.furtmeier.it:4444/";
-$url = "ws://venus.supportbox.io:4444/";
-$seconds = 60 * 20;
 
-#Thruway\Logging\Logger::set(new Psr\Log\NullLogger());
+$url = "wss://venus.supportbox.io:4444/";
+
+Thruway\Logging\Logger::set(new Psr\Log\NullLogger());
 $connection = new \Thruway\Connection([
 	"realm"   => $realm,
 	"url"     => $url
 ]);
 
 $client = $connection->getClient();
-#$client->addClientAuthenticator(new ClientPhimAuthenticator($realm, "phimUser", $token));
+$auth = new Thruway\Authentication\ClientWampCraAuthenticator("supportBox", $token);
+$client->setAuthId('supportBox');
+$client->addClientAuthenticator($auth);
 
 $connection->on('error', function($reason){
 	print_r($reason);
 });
 
-$connection->on('open', function (\Thruway\ClientSession $session) use ($connection, $serial, $url, $seconds, $cloud) {
+$connection->on('open', function (\Thruway\ClientSession $session) use ($connection, $serial, $url,  $cloud) {
 	util::log("Connected to $url");
-	
-	util::sayHo($session);
-	
-	$connection->getClient()->getLoop()->addPeriodicTimer($seconds, function(React\EventLoop\Timer\Timer $timer) use ($session, $serial){
-		util::sayHo($session);
-	});
 	
     $session->subscribe('it.furtmeier.supportbox.serversays', function ($args) use ($session) {
         $call = $args[0];
@@ -148,21 +154,25 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
         }
     });
 	
-    $session->subscribe('it.furtmeier.supportbox.'.$serial, function ($args) use ($session, $serial) {
-        $call = $args[0];
-        if(!$call OR !isset($call->m))
-        	return;
-        	
-		util::log("Server says to me '$call->m'");
-		
-		$method = $call->m;
-		if(!method_exists("OnAction", $method))
-			throw new Exception ("Method $method does not exist!");
-		
-		$answer = OnAction::$method(isset($call->a) ? $call->a : null, $session, $serial);
-		if($answer)
-			$session->publish('it.furtmeier.supportbox.'.$serial, [$answer], [], ["acknowledge" => true]);
-    });
+	$session->register('it.furtmeier.supportbox.'.$serial.".connectPort", function($args){
+		return OnAction::connectPort($args);
+	});
+	
+	$session->register('it.furtmeier.supportbox.'.$serial.".disconnectPort", function($args){
+		return OnAction::disconnectPort($args);
+	});
+	
+	$session->register('it.furtmeier.supportbox.'.$serial.".getConnections", function(){
+		return OnAction::getConnections();
+	});
+	
+	$session->register('it.furtmeier.supportbox.'.$serial.".doUpdate", function(){
+		return OnAction::doUpdate();
+	});
+	
+	$session->register('it.furtmeier.supportbox.'.$serial.".getVersion", function(){
+		return OnAction::getVersion();
+	});
 	
 });
 

@@ -164,6 +164,9 @@ root: pi
 		exec("echo \"$aliases\" | sudo tee /etc/aliases > /dev/null");
 		exec("sudo postalias /etc/aliases");
 		
+		exec("echo \"@supportbox.io   ". ltrim(SBInfo::serial(), "0")."@supportbox.io\" | sudo tee /etc/postfix/rewrite_all > /dev/null");
+		exec("sudo postmap /etc/postfix/rewrite_all");
+		
 		$result = exec('sudo -u pi ssh-keygen -lf /home/pi/.ssh/id_rsa.pub');
 		$content = explode(' ', $result);
 				
