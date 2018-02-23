@@ -20,7 +20,7 @@
 <phynx>
 	<plugin>
 		<name>Hilfe</name>
-		<menuName>Hilfe</menuName>
+		<menuName></menuName>
 		<collection>mHilfe</collection>
 		
 		<icon>./images/navi/hilfe.png</icon>
@@ -29,7 +29,7 @@
 		<adminOnly>false</adminOnly>
 		<menuEntryTarget>contentScreen</menuEntryTarget>
 		
-		<version>0.1</version>
+		<version>0.2</version>
 
 	</plugin>
 </phynx>
