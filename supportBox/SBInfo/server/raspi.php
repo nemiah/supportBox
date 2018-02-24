@@ -92,9 +92,9 @@ class OnAction {
 		
 		exec("sudo -u pi php /var/www/html/update.php", $output2);
 		
-		#exec("sudo /usr/bin/supervisorctl restart all", $output3);
+		exec("echo \"sudo /usr/bin/supervisorctl restart all\" | at now + 1 min", $output3);
 		
-		return "git pull origin master:\n".implode("\n", $output1)."\n\nupdate.php:\n".implode("\n", $output2);#."\n\nsupervisorctl restart all:\n".implode("\n", $output3);
+		return "git pull origin master:\n".implode("\n", $output1)."\n\nupdate.php:\n".implode("\n", $output2)."\n\nScheduling restart:\n".implode("\n", $output3);
 	}
 	
 	public static function getVersion(){
