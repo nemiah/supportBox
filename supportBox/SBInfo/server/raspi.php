@@ -65,7 +65,7 @@ class OnAction {
 				$R->SBForwardConnected = 1;
 			
 			$R->SBForwardAvailable = false;
-			$handle = @fsockopen($R->SBForwardIP, $R->SBForwardPort, null, null, 2); 
+			$handle = @fsockopen($R->SBForwardIP, $R->SBForwardPort, $errno, $errstr, 2); 
 
 			if($handle){
 				$R->SBForwardAvailable = true;
