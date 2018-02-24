@@ -1,3 +1,3 @@
 <?php
 
-echo "nothing to do!";
+echo "Nothing to do!";
