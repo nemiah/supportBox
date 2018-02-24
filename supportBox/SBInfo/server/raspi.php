@@ -3,11 +3,13 @@ require '/home/pi/thruway/vendor/autoload.php';
 require_once __DIR__."/../../../libraries/PhpFileDB.class.php";
 require_once __DIR__."/util.php";
 
+ini_set('default_socket_timeout', 2);
+
 util::log("-------------------------------------------");
 util::log("Started...");
 
 util::log("Sleeping 60 sec");
-#sleep(60);
+sleep(60);
 util::log("Go...");
 
 class OnAction {
@@ -61,6 +63,14 @@ class OnAction {
 			$pfile = "/home/pi/pids/ssh_".$R->SBForwardID;
 			if(file_exists($pfile) AND util::isConnected(file_get_contents($pfile)))
 				$R->SBForwardConnected = 1;
+			
+			$R->SBForwardAvailable = false;
+			$handle = @fsockopen($R->SBForwardIP, $R->SBForwardPort, null, null, 2); 
+
+			if($handle){
+				$R->SBForwardAvailable = true;
+				fclose($handle);
+			}
 			
 			$connections[] = $R;
 		}
@@ -154,6 +164,20 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
         switch($call->m){
         	case "knockknock":
         		util::sayImHere($session, $cloud);
+	        break;
+        }
+    });
+	
+    $session->subscribe('it.furtmeier.supportbox.'.$serial, function ($args) use ($session, $serial) {
+        $call = $args[0];
+        if(!$call OR !isset($call->m))
+        	return;
+        	
+		util::log("Somebody says to me '$call->m'");
+		
+        switch($call->m){
+        	case "amihere":
+        		util::sayImHere($session, $serial);
 	        break;
         }
     });

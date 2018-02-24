@@ -36,8 +36,8 @@ class util {
 		util::log("Saying 'ho' to server");
 	}
 	
-	public static function sayImHere($session, $cloud){
-		$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [util::message("I'm here")], [], ["acknowledge" => true]);
+	public static function sayImHere($session, $answerto){
+		$session->publish('it.furtmeier.supportbox.'.strtolower($answerto), [util::message("I'm here")], [], ["acknowledge" => true]);
 		util::log("Answering 'I'm here'");
 	}
 	
@@ -81,5 +81,51 @@ class util {
 			$response->data = $data;
 		
 		return json_encode($response, JSON_UNESCAPED_UNICODE);
+	}
+	
+	public static function init($C){
+		$Q = $C->query("SELECT * FROM Userdata WHERE UserID = -1 AND name = 'SBToken'");
+		$RToken = $Q->fetch_object();
+		if(!$RToken){
+			sleep(3);
+			exit(2);
+		}
+
+		#$serial = util::serial();
+		$realm = "supportBox_1";
+		$token = $RToken->wert;
+
+		$url = "wss://".self::serverURL().":".self::serverPort()."/";
+
+		Thruway\Logging\Logger::set(new Psr\Log\NullLogger());
+		$connection = new \Thruway\Connection([
+			"realm"   => $realm,
+			"url"     => $url
+		]);
+
+		$client = $connection->getClient();
+		$auth = new Thruway\Authentication\ClientWampCraAuthenticator("supportBox", $token);
+		$client->setAuthId('supportBox');
+		$client->addClientAuthenticator($auth);
+
+		$connection->on('error', function($reason){
+			print_r($reason);
+		});
+		
+		return $connection;
+	}
+	
+	public static function serverURL(){
+		return "venus.supportbox.io";
+	}
+	
+	public static function serverPort(){
+		return 4444;
+	}
+	
+	public static function cloud($C){
+		$Q = $C->query("SELECT * FROM Userdata WHERE UserID = -1 AND name = 'SBCloud'");
+		$RCloud = $Q->fetch_object();
+		return $RCloud->wert;
 	}
 }

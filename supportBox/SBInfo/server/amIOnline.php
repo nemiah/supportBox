@@ -1,38 +1,99 @@
 <?php
-
-require_once __DIR__."/../../../libraries/PhpFileDB.class.php";
 require_once __DIR__."/util.php";
-require_once __DIR__."/../../../classes/backend/UnpersistentClass.class.php";
-require_once __DIR__."/../SBInfo.class.php";
+
+$handle = @fsockopen(util::serverURL(), util::serverPort()); 
+
+if(!$handle)
+	die();
+fclose($handle);
+
+
+require '/home/pi/thruway/vendor/autoload.php';
+require_once __DIR__."/../../../libraries/PhpFileDB.class.php";
 
 $C = util::dbConnection();
-$Q = $C->query("SELECT * FROM Userdata WHERE UserID = -1 AND name = 'SBCloud'");
-if(!$Q)
-	exit();
+$connection = util::init($C);
+$C->close();
+$serial = util::serial();
 
-$R = $Q->fetch_object();
-if(!$R)
-	exit();
+class amIOnline {
+	public static $timer;
+	public static $done = false;
+}
 
-$url = SBInfo::$server."/ubiquitous/CustomerPage/?D=supportBox/SBDevice&cloud=".$R->wert."&method=amIOnline&serial=".SBInfo::serial();
-$data = file_get_contents($url);
-if($data === null)
-	exit();
+$connection->on('open', function (\Thruway\ClientSession $session) use ($connection, $serial) {
+	#util::log("Connected to server");
+	
+	amIOnline::$timer = $connection->getClient()->getLoop()->addTimer(10, function() use ($connection, $session){
+		#util::log("No answer from me!");
+		
+		$connection->close();
+	});
+			
+			
+    $session->subscribe('it.furtmeier.supportbox.'.$serial, function ($args) use ($connection) {
+		if($args[0]->f != ltrim(util::serial(), "0") OR $args[0]->m != "I'm here")
+			return;
+		
+		#util::log("Everything OK!");
+		amIOnline::$done = true;
+		amIOnline::$timer->cancel();
+		
+		$connection->close();
+    });
+	
+	$session->publish('it.furtmeier.supportbox.'.$serial, [util::message("amihere")], [], ["acknowledge" => true]);
+	
+});
 
-$data = json_decode($data);
-#if($data->status == "OK")
-#	exit();
+$connection->open();
+#util::log("Shutdown.");
 
-exec("sudo /usr/bin/supervisorctl restart all", $output);
+if(amIOnline::$done){
+	#util::log("Shutdown.");
+	exit(0);
+}
 
-var_dump($output);
+exec("sudo /usr/bin/supervisorctl restart all");
 
-sleep(10);
+#util::log("Restarted and waiting 90 seconds...");
+sleep(90);
 
-$data = file_get_contents($url);
-if($data === null)
-	exit();
+$C = util::dbConnection();
+$connection = util::init($C);
+$C->close();
 
+$connection->on('open', function (\Thruway\ClientSession $session) use ($connection, $serial) {
+	amIOnline::$timer = $connection->getClient()->getLoop()->addTimer(10, function() use ($connection, $session){
+		#util::log("Still no answer from me!!!");
+		
+		$connection->close();
+	});
+			
+			
+    $session->subscribe('it.furtmeier.supportbox.'.$serial, function ($args) use ($connection) {
+		if($args[0]->f != ltrim(util::serial(), "0") OR $args[0]->m != "I'm here")
+			return;
+		
+		#util::log("Everything OK now!");
+		
+		amIOnline::$done = true;
+		amIOnline::$timer->cancel();
+		
+		$connection->close();
+    });
+	
+	$session->publish('it.furtmeier.supportbox.'.$serial, [util::message("amihere")], [], ["acknowledge" => true]);
+	
+});
 
-$data = json_decode($data);
-print_r($data);
+$connection->open();
+
+if(amIOnline::$done){
+	#util::log("Shutdown.");
+	exit(0);
+}
+
+util::log("EXPLODE!!!");
+
+exit(0);
