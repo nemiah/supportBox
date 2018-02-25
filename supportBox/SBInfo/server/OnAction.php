@@ -76,7 +76,7 @@ class OnAction {
     }
 	
 	public static function doUpdate(){
-		exec("cd /var/www/html && sudo -u pi git pull origin master", $output1);
+		exec("cd /var/www/html && sudo -u pi git pull origin master 2>&1", $output1);
 		
 		exec("sudo -u pi php /var/www/html/supportBox/SBInfo/server/update.php", $output2);
 		
