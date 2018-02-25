@@ -32,6 +32,31 @@ class mInstallation extends anyC {
 	}
 
 	public function setupAllTables($echo = 0){
+		$return = array();
+		if(file_exists(Util::getRootPath()."/system/CI.pfdb.php")){
+			$return["all"] = "Using fast setup mode...";
+			
+			$DBG = new DBStorage();
+			$C = $DBG->getConnection();
+			
+			$DB = new PhpFileDB();
+			$DB->setFolder("/var/www/html/system/");
+			$Q = $DB->pfdbQuery("SELECT * FROM CI");
+			while($R = $DB->pfdbFetchAssoc($Q)){
+				if(!trim($R["MySQL"]))
+					continue;
+				
+				$CIA = new stdClass();
+				$CIA->MySQL = $R["MySQL"];
+				
+				$DBG->createTable($CIA);
+				
+				$return[] = $R["MySQL"];
+			}
+			
+			return $return;
+		}
+		
 		$currentApp = Applications::activeApplication();
 		$apps = Applications::getList();
 		$apps["plugins"] = "plugins";
@@ -39,7 +64,6 @@ class mInstallation extends anyC {
 
 		$currentPlugins = $_SESSION["CurrentAppPlugins"];
 		
-		$return = array();
 		foreach($apps AS $app){
 			$AP = $_SESSION["CurrentAppPlugins"] = new AppPlugins($app);
 			$AP->scanPlugins("plugins");

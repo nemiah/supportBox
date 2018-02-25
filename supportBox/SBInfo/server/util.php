@@ -36,8 +36,8 @@ class util {
 		util::log("Saying 'ho' to server");
 	}
 	
-	public static function sayImHere($session, $answerto){
-		$session->publish('it.furtmeier.supportbox.'.strtolower($answerto), [util::message("I'm here")], [], ["acknowledge" => true]);
+	public static function sayImHere($session, $answerto, $content = null){
+		$session->publish('it.furtmeier.supportbox.'.strtolower($answerto), [util::message("I'm here", $content)], [], ["acknowledge" => true]);
 		util::log("Answering 'I'm here'");
 	}
 	
@@ -83,17 +83,19 @@ class util {
 		return json_encode($response, JSON_UNESCAPED_UNICODE);
 	}
 	
-	public static function init($C){
+	public static function token($C){
 		$Q = $C->query("SELECT * FROM Userdata WHERE UserID = -1 AND name = 'SBToken'");
 		$RToken = $Q->fetch_object();
-		if(!$RToken){
-			sleep(3);
-			exit(2);
-		}
-
+		if(!$RToken)
+			return null;
+		
+		return $RToken->wert;
+	}
+	
+	public static function init($C){
 		#$serial = util::serial();
 		$realm = "supportBox_1";
-		$token = $RToken->wert;
+		$token = self::token($C);
 
 		$url = "wss://".self::serverURL().":".self::serverPort()."/";
 
@@ -115,6 +117,29 @@ class util {
 		return $connection;
 	}
 	
+	public static function initNew(){
+		$realm = "supportBox_1";
+
+		$url = "wss://".self::serverURL().":".self::serverPort()."/";
+
+		Thruway\Logging\Logger::set(new Psr\Log\NullLogger());
+		$connection = new \Thruway\Connection([
+			"realm"   => $realm,
+			"url"     => $url
+		]);
+
+		$client = $connection->getClient();
+		$auth = new Thruway\Authentication\ClientWampCraAuthenticator("hiimnew", "hi");
+		$client->setAuthId('hiimnew');
+		$client->addClientAuthenticator($auth);
+
+		$connection->on('error', function($reason){
+			print_r($reason);
+		});
+		
+		return $connection;
+	}
+	
 	public static function serverURL(){
 		return "venus.supportbox.io";
 	}
@@ -125,7 +150,13 @@ class util {
 	
 	public static function cloud($C){
 		$Q = $C->query("SELECT * FROM Userdata WHERE UserID = -1 AND name = 'SBCloud'");
+		if(!$Q)
+			return null;
+		
 		$RCloud = $Q->fetch_object();
+		if(!$RCloud)
+			return null;
+		
 		return $RCloud->wert;
 	}
 }

@@ -345,7 +345,7 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 			$hasDBConnection = true;
 		} catch(Exception $e){}
 		
-		if(!$File->A("FileIsWritable") AND !$hasDBConnection){
+		if(Applications::activeApplication() != "supportBox" AND !$File->A("FileIsWritable") AND !$hasDBConnection){
 			$message = "<p style=\"padding:20px;font-size:20px;color:#555;text-align:center;\">".$_SESSION["applications"]->getActiveApplication()." ist auf diesem Server noch nicht installiert.</p>";
 			$html = "<div style=\"width:600px;margin:auto;line-height:1.5;\">
 				<p>

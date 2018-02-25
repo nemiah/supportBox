@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 
 /*
@@ -739,7 +739,10 @@ $j(document).on('mouseover', '.bigButton', function(event) {
 	}, event);
 });
 
-$j(document).on("keyup", function(){
+$j(document).on("keyup", function(event){
+	if($j(event.target).prop("id") == "loginPassword" || $j(event.target).prop("id") == "loginUsername")
+		return;
+	
 	if(Date.now() - Ajax.lastRequestTime > 5 * 60 * 1000)
 		contentManager.rmePCR('Menu','','autoLogoutInhibitor','');
 });

@@ -38,7 +38,8 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 		$BP = new Button("Passwort aktualisieren", "./images/i2/refresh.png", "icon");
 		$BP->style("float:right;");
 		$BP->popup("", "Passwort aktualisieren", "mSBInfo", "-1", "passwordRefresh");
-		
+		if(!mUserdata::getGlobalSettingValue("SBSSHPass", ""))
+			$BP = "";
 		#$BS = new Button("Supervisor-Status", "./supportBox/SBInfo/administrator.png", "icon");
 		#$BS->style("float:right;");
 		#$BS->popup("", "Supervisor-Status", "mSBInfo", "-1", "status");
