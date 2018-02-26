@@ -12,7 +12,7 @@ require '/home/pi/thruway/vendor/autoload.php';
 require_once __DIR__."/../../../libraries/PhpFileDB.class.php";
 
 $C = util::dbConnection();
-$token = self::token($C);
+$token = util::token($C);
 if($token == null)
 	exit(0);
 

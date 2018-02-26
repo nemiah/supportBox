@@ -88,6 +88,8 @@ class OnAction {
 	public static function getVersion(){
 		require_once __DIR__."/../../../applications/supportBoxApplication.class.php";
 		$A = new supportBoxApplication();
-		return $A->registerVersion();
+		exec("cd /var/www/html && git rev-parse --short HEAD", $output);
+		
+		return $A->registerVersion()." ".$output[0];
 	}
 }
