@@ -85,6 +85,9 @@ class util {
 	
 	public static function token($C){
 		$Q = $C->query("SELECT * FROM Userdata WHERE UserID = -1 AND name = 'SBToken'");
+		if(!$Q)
+			return null;
+		
 		$RToken = $Q->fetch_object();
 		if(!$RToken)
 			return null;
