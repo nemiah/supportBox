@@ -54,6 +54,7 @@ class mInstallation extends anyC {
 				$return[] = $R["MySQL"];
 			}
 			
+			mUserdata::setUserdataS("DBVersion", Phynx::build(), "", -1);
 			return $return;
 		}
 		
