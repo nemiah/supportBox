@@ -13,7 +13,7 @@ class OnAction {
 		util::log("Connecting $args[1]:$R->SBForwardIP:$R->SBForwardPort ($args[0])");
 		
 		exec(sprintf("%s > %s 2>&1 & echo $! > %s", "ssh -o StrictHostKeyChecking=no -R$args[1]:$R->SBForwardIP:$R->SBForwardPort -N pipi@$args[2]", "/dev/null", "/home/pi/pids/ssh_".$args[0]));
-		
+		sleep(1);
 		if(!util::isConnected(file_get_contents("/home/pi/pids/ssh_".$args[0])))
 			unlink("/home/pi/pids/ssh_".$args[0]);
 		
