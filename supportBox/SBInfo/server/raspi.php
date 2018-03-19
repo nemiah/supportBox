@@ -98,12 +98,16 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
         }
     });
 	
-	$session->register('it.furtmeier.supportbox.'.$serial.".connectPort", function($args){
-		return OnAction::connectPort($args);
+	$session->register('it.furtmeier.supportbox.'.$serial.".connectPort", function($args) use ($session, $cloud){
+		$result = OnAction::connectPort($args);
+		$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [util::message("connected", $args[0])], [], ["acknowledge" => true]);
+		return $result;
 	});
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".disconnectPort", function($args){
-		return OnAction::disconnectPort($args);
+		$result = OnAction::disconnectPort($args);
+		$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [util::message("disconnected", $args[0])], [], ["acknowledge" => true]);
+		return $result;
 	});
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".getConnections", function(){
