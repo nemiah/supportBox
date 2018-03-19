@@ -104,7 +104,7 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
 		return $result;
 	});
 	
-	$session->register('it.furtmeier.supportbox.'.$serial.".disconnectPort", function($args){
+	$session->register('it.furtmeier.supportbox.'.$serial.".disconnectPort", function($args) use ($session, $cloud){
 		$result = OnAction::disconnectPort($args);
 		$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [util::message("disconnected", $args[0])], [], ["acknowledge" => true]);
 		return $result;
