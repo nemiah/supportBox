@@ -30,7 +30,7 @@ class OnAction {
 		
 		if(file_exists("/home/pi/pids/ssh_".$args[0])){
 			$pid = file_get_contents("/home/pi/pids/ssh_".$args[0]);
-			exec("echo \"/var/www/html/supportBox/SBInfo/server/suicideSquad.php $pid $args[0]\" | at -M now + 2min");
+			exec("echo \"/var/www/html/supportBox/SBInfo/server/suicideSquad.php ".trim($pid)." $args[0]\" | at -M now + 2min");
 		}
 		
 		$C->close();
