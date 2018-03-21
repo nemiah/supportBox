@@ -28,6 +28,11 @@ class OnAction {
 			
 		}
 		
+		if(file_exists("/home/pi/pids/ssh_".$args[0])){
+			$pid = file_get_contents("/home/pi/pids/ssh_".$args[0]);
+			exec("echo \"kill -9 $pid\" | at -M now + 2min");
+		}
+		
 		$C->close();
 		
 		return util::ok("Verbindung aufgebaut");
