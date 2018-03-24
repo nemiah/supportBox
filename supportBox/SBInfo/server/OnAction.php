@@ -30,7 +30,7 @@ class OnAction {
 		
 		if(file_exists("/home/pi/pids/ssh_".$args[0])){
 			$pid = file_get_contents("/home/pi/pids/ssh_".$args[0]);
-			exec("echo \"/var/www/html/supportBox/SBInfo/server/suicideSquad.php ".trim($pid)." $args[0]\" | at -M now + 2min 2>&1", $atResult);
+			exec("echo \"php /var/www/html/supportBox/SBInfo/server/suicideSquad.php ".trim($pid)." $args[0]\" | at -M now + 2min 2>&1", $atResult);
 			file_put_contents("/home/pi/pids/at_$args[0]", trim($atResult[1]));
 		}
 		
@@ -66,10 +66,13 @@ class OnAction {
 		$connections = array();
 		while($R = $Q->fetch_object()){
 			$R->SBForwardConnected = 0;
-			$pfile = "/home/pi/pids/ssh_".$R->SBForwardID;
-			if(file_exists($pfile) AND util::isConnected(file_get_contents($pfile)))
-				$R->SBForwardConnected = 1;
+			$R->SBForwardTimeout = 0;
 			
+			$pfile = "/home/pi/pids/ssh_".$R->SBForwardID;
+			if(file_exists($pfile) AND util::isConnected(file_get_contents($pfile))){
+				$R->SBForwardConnected = 1;
+				$R->SBForwardTimeout = preg_replace("/^job [0-9]+ at /", "", file_get_contents("/home/pi/pids/at_".$R->SBForwardID));
+			}
 			$R->SBForwardAvailable = false;
 			$handle = @fsockopen($R->SBForwardIP, $R->SBForwardPort, $errno, $errstr, 2); 
 
