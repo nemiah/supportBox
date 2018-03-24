@@ -22,6 +22,9 @@ class SBForwardGUI extends SBForward implements iGUIHTML2 {
 		$gui = new HTMLGUIX($this);
 		$gui->name("Weiterleitung");
 	
+		$gui->label("SBForwardURLAppend", "URL-Erweiterung");
+		$gui->descriptionField("SBForwardURLAppend", "Z.B. /home/index.php");
+		
 		return $gui->getEditHTML();
 	}
 }
