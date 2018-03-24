@@ -51,6 +51,8 @@ class OnAction {
 		util::log("Disconnecting $R->SBForwardIP:$R->SBForwardPort ($args[0])");
 
 		exec("kill -9 ".file_get_contents("/home/pi/pids/ssh_".$args[0]));
+		preg_match("/^job ([0-9]+) at /", file_get_contents("/home/pi/pids/at_".$args[0]), $matches);
+		exec("atrm ".$matches[1]);
 		unlink("/home/pi/pids/ssh_".$args[0]);
 		unlink("/home/pi/pids/at_".$args[0]);
 		
