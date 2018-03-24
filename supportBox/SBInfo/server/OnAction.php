@@ -10,6 +10,12 @@ class OnAction {
 			return util::error("SBForwardID $args[0] existiert nicht!");
 		}
 		
+		$localIP = getHostByName(getHostName());
+		if($R->SBForwardIP == $localIP){
+			$C->close();
+			return util::error("Diese Verbindung ist unzulässig!");
+		}
+		
 		util::log("Connecting $args[1]:$R->SBForwardIP:$R->SBForwardPort ($args[0])");
 		
 		$command = "ssh -o StrictHostKeyChecking=no -R$args[1]:$R->SBForwardIP:$R->SBForwardPort -N pipi@$args[2]";
