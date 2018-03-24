@@ -81,7 +81,7 @@ class OnAction {
 			$pfile = "/home/pi/pids/ssh_".$R->SBForwardID;
 			if(file_exists($pfile) AND util::isConnected(file_get_contents($pfile))){
 				$R->SBForwardConnected = 1;
-				$R->SBForwardTimeout = preg_replace("/^job [0-9]+ at /", "", file_get_contents("/home/pi/pids/at_".$R->SBForwardID));
+				$R->SBForwardTimeout = strtotime(preg_replace("/^job [0-9]+ at /", "", file_get_contents("/home/pi/pids/at_".$R->SBForwardID)));
 			}
 			$R->SBForwardAvailable = false;
 			$handle = @fsockopen($R->SBForwardIP, $R->SBForwardPort, $errno, $errstr, 2); 
