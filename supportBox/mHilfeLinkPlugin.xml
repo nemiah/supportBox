@@ -29,7 +29,7 @@
 		<adminOnly>false</adminOnly>
 		<menuEntryTarget>contentScreen</menuEntryTarget>
 		
-		<version>0.3</version>
+		<version>0.4</version>
 
 	</plugin>
 </phynx>
