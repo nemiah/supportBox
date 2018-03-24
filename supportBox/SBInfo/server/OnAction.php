@@ -31,7 +31,7 @@ class OnAction {
 		if(file_exists("/home/pi/pids/ssh_".$args[0])){
 			$pid = file_get_contents("/home/pi/pids/ssh_".$args[0]);
 			exec("echo \"/var/www/html/supportBox/SBInfo/server/suicideSquad.php ".trim($pid)." $args[0]\" | at -M now + 2min 2>&1", $atResult);
-			file_put_contents("/home/pi/pids/at_$args[0]", trim($atResult[0]));
+			file_put_contents("/home/pi/pids/at_$args[0]", trim($atResult[1]));
 		}
 		
 		$C->close();
@@ -52,6 +52,7 @@ class OnAction {
 
 		exec("kill -9 ".file_get_contents("/home/pi/pids/ssh_".$args[0]));
 		unlink("/home/pi/pids/ssh_".$args[0]);
+		unlink("/home/pi/pids/at_".$args[0]);
 		
 		$C->close();
 		
@@ -99,7 +100,7 @@ class OnAction {
 		
 		exec("echo \"sudo /usr/bin/supervisorctl restart all\" | at -M now + 1min", $output3);
 		
-		return "git pull origin master:\n".implode("\n", $output1)."\n\nupdate.php:\n".implode("\n", $output2)."\n\nScheduling restart in 2 minutes.\n".implode("\n", $output3);
+		return "git pull origin master:\n".implode("\n", $output1)."\n\nupdate.php:\n".implode("\n", $output2)."\n\nScheduling restart in 1 minute.\n".implode("\n", $output3);
 	}
 	
 	public static function getVersion(){
