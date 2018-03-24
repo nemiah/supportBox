@@ -11,7 +11,7 @@ class OnAction {
 		}
 		
 		$localIP = getHostByName(getHostName());
-		if($R->SBForwardIP == $localIP){
+		if($R->SBForwardIP == $localIP OR trim($R->SBForwardIP) == "localhost" ){
 			$C->close();
 			return util::error("Diese Verbindung ist unzulässig!");
 		}

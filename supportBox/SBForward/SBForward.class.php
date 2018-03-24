@@ -18,5 +18,29 @@
  *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class SBForward extends PersistentObject {
+	private function checkIP($ip){
+		$localIP = getHostByName(getHostName());
+		if(trim($ip) == "localhost")
+			return false;
+		
+		if($trim($ip) == $localIP)
+			return false;
+		
+		return true;
+	}
+	
+	function newMe($checkUserData = true, $output = false) {
+		if(!$this->checkIP($this->A("SBForwardIP")))
+			Red::errorD ("Die IP der supportBox darf nicht verwendet werden!");
+		
+		return parent::newMe($checkUserData, $output);
+	}
+	
+	function saveMe($checkUserData = true, $output = false) {
+		if(!$this->checkIP($this->A("SBForwardIP")))
+			Red::errorD ("Die IP der supportBox darf nicht verwendet werden!");
+		
+		return parent::saveMe($checkUserData, $output);
+	}
 }
 ?>
