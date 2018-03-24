@@ -30,8 +30,8 @@ class OnAction {
 		
 		if(file_exists("/home/pi/pids/ssh_".$args[0])){
 			$pid = file_get_contents("/home/pi/pids/ssh_".$args[0]);
-			exec("echo \"/var/www/html/supportBox/SBInfo/server/suicideSquad.php ".trim($pid)." $args[0]\" | at -M now + 2min | 2>&1 awk '/job/ {print $2}'", $atJobID);
-			file_put_contents("/home/pi/pids/at_$args[0]", trim($atJobID[0]));
+			exec("echo \"/var/www/html/supportBox/SBInfo/server/suicideSquad.php ".trim($pid)." $args[0]\" | at -M now + 2min 2>&1", $atResult);
+			file_put_contents("/home/pi/pids/at_$args[0]", trim($atResult[0]));
 		}
 		
 		$C->close();
@@ -97,7 +97,7 @@ class OnAction {
 		
 		exec("sudo -u pi php /var/www/html/supportBox/SBInfo/server/update.php", $output2);
 		
-		exec("echo \"sudo /usr/bin/supervisorctl restart all\" | at -M now + 2min", $output3);
+		exec("echo \"sudo /usr/bin/supervisorctl restart all\" | at -M now + 1min", $output3);
 		
 		return "git pull origin master:\n".implode("\n", $output1)."\n\nupdate.php:\n".implode("\n", $output2)."\n\nScheduling restart in 2 minutes.\n".implode("\n", $output3);
 	}
