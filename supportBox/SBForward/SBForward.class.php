@@ -26,6 +26,9 @@ class SBForward extends PersistentObject {
 		if(trim($ip) == $localIP)
 			return false;
 		
+		if(substr(trim($ip), 0, 4) == "127.")
+			return false;
+		
 		return true;
 	}
 	
