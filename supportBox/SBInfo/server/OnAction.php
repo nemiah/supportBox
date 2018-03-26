@@ -107,9 +107,9 @@ class OnAction {
 		
 		$info = new stdClass();
 		$info->ip = $localIP;
-		$info->uptime = $uptime;
+		$info->uptime = trim($uptime);
 		
-		return util::ok("", $info);
+		return $info;
 	}
 	
 	public static function hi($call, $session, $serial) {
