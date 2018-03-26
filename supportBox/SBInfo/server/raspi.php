@@ -122,6 +122,10 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
 		return util::ok("", OnAction::getVersion());
 	});
 	
+	$session->register('it.furtmeier.supportbox.'.$serial.".getInfo", function(){
+		return util::ok("", OnAction::getInfo());
+	});
+	
 });
 
 $connection->open();

@@ -101,6 +101,17 @@ class OnAction {
         return util::ok("", $connections);
     }
 	
+	public static function getInfo(){
+		$uptime = shell_exec("uptime");
+		$localIP = getHostByName(getHostName());
+		
+		$info = new stdClass();
+		$info->ip = $localIP;
+		$info->uptime = $uptime;
+		
+		return util::ok("", $info);
+	}
+	
 	public static function hi($call, $session, $serial) {
 		#print_r($call); //do nothing, that's fine!
 		return null;
@@ -111,9 +122,9 @@ class OnAction {
 		
 		exec("sudo -u pi php /var/www/html/supportBox/SBInfo/server/update.php", $output2);
 		
-		exec("echo \"sudo /usr/bin/supervisorctl restart all\" | at -M now + 1min", $output3);
+		exec("echo \"sudo /usr/bin/supervisorctl restart all\" | at -M now + 2min", $output3);
 		
-		return "git pull origin master:\n".implode("\n", $output1)."\n\nupdate.php:\n".implode("\n", $output2)."\n\nScheduling restart in 1 minute.\n".implode("\n", $output3);
+		return "git pull origin master:\n".implode("\n", $output1)."\n\nupdate.php:\n".implode("\n", $output2)."\n\nScheduling restart in 2 minute.\n".implode("\n", $output3);
 	}
 	
 	public static function getVersion(){
