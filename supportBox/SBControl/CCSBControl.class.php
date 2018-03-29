@@ -89,7 +89,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 		$C->close();
 		
 		$connection->on('open', function (\Thruway\ClientSession $session) use ($argv,  $cloud, $connection) {
-			$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [SBUtil::message("disconnected", $argv[2])], [], ["acknowledge" => true]);
+			$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [SBUtil::message("modeChange", $argv[2])], [], ["acknowledge" => true]);
 			$connection->close();
 		});
 
