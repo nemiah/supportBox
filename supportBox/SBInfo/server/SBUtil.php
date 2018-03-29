@@ -1,6 +1,6 @@
 <?php
 
-class util {
+class SBUtil {
 	public static function dbConnection(){
 		$DB = new \PhpFileDB();
 		$DB->setFolder("/var/www/html/system/DBData/");
@@ -32,17 +32,17 @@ class util {
 	}
 	
 	public static function sayHo($session){
-		$session->publish('it.furtmeier.supportbox.pisays', [util::message("ho")], [], ["acknowledge" => true]);
-		util::log("Saying 'ho' to server");
+		$session->publish('it.furtmeier.supportbox.pisays', [SBUtil::message("ho")], [], ["acknowledge" => true]);
+		SBUtil::log("Saying 'ho' to server");
 	}
 	
 	public static function sayImHere($session, $answerto, $content = null){
-		$session->publish('it.furtmeier.supportbox.'.strtolower($answerto), [util::message("I'm here", $content)], [], ["acknowledge" => true]);
-		util::log("Answering 'I'm here'");
+		$session->publish('it.furtmeier.supportbox.'.strtolower($answerto), [SBUtil::message("I'm here", $content)], [], ["acknowledge" => true]);
+		SBUtil::log("Answering 'I'm here'");
 	}
 	
 	public static function sayAllDone($session, $serial){
-		$session->publish('it.furtmeier.supportbox.'.$serial, [util::message("AllDone")], [], ["acknowledge" => true]);
+		$session->publish('it.furtmeier.supportbox.'.$serial, [SBUtil::message("AllDone")], [], ["acknowledge" => true]);
 	}
 	
 	public static function message($method, $content = null){
@@ -50,7 +50,7 @@ class util {
 		$message->m = $method;
 		if($content)
 			$message->c = $content;
-		$message->f = ltrim(util::serial(), "0");
+		$message->f = ltrim(SBUtil::serial(), "0");
 		$message->t = time();
 
 		return $message;
@@ -96,7 +96,7 @@ class util {
 	}
 	
 	public static function init($C){
-		#$serial = util::serial();
+		#$serial = SBUtil::serial();
 		$realm = "supportBox_1";
 		$token = self::token($C);
 
