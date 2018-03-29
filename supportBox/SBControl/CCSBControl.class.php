@@ -32,21 +32,20 @@ class CCSBControl extends CCPage implements iCustomContent {
 	}
 	
 	function getCMSHTML() {
-		
 		$html = "<div style=\"display:inline-block;width:33.33%;vertical-align:top;\">";
 		$html .= "<h1>Weiterleitungen</h1>";
 		
-		$html .= "<ul>";
+		$html .= "<ul style=\"margin-top:0;\">";
 		$AC = anyC::get("SBForward");
-		while($F = $AC->n()){
+		while($F = $AC->n())
 			$html .= "<li>".$F->A("SBForwardName")." (".$F->A("SBForwardIP").":".$F->A("SBForwardPort").")</li>";
-		}
+		
 		
 		$html .= "</ul>";
 		$html .= "</div>";
 		
 		$html .= "<div style=\"display:inline-block;width:33.33%;vertical-align:top;\">";
-		$html .= "<h1>Status supportBox</h1>";
+		$html .= "<h1>Neue Verbindungen</h1>";
 		
 		$mode = mUserdata::getGlobalSettingValue("supportBoxNewConnection", -1);
 		
