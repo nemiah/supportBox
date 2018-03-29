@@ -88,14 +88,14 @@ class OnAction {
 	public static function getConnections() {
 		$C = util::dbConnection();
 		
-		if(!self::allowed($C))
-			return util::error("Deaktiviert");
+		$allowed = self::allowed($C);
 		
 		$Q = $C->query("SELECT * FROM SBForward");
 		$connections = array();
 		while($R = $Q->fetch_object()){
 			$R->SBForwardConnected = 0;
 			$R->SBForwardTimeout = 0;
+			$R->SBForwardAllowed = $allowed;
 			
 			$pfile = "/home/pi/pids/ssh_".$R->SBForwardID;
 			if(file_exists($pfile) AND util::isConnected(file_get_contents($pfile))){
