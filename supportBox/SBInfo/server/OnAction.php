@@ -15,37 +15,37 @@ class OnAction {
 	}
 	
 	public static function connectPort($args) {
-		$C = util::dbConnection();
+		$C = SBUtil::dbConnection();
 		$Q = $C->query("SELECT * FROM SBForward WHERE SBForwardID = '".$C->real_escape_string($args[0])."'");
 		$R = $Q->fetch_object();
 		if(!$R){
 			$C->close();
-			return util::error("SBForwardID $args[0] existiert nicht!");
+			return SBUtil::error("SBForwardID $args[0] existiert nicht!");
 		}
 		
 		if(!self::allowed($C))
-			return util::error("Aktuell sind keine neuen Verbindungen erlaubt.");
+			return SBUtil::error("Aktuell sind keine neuen Verbindungen erlaubt.");
 		
 		$localIP = getHostByName(getHostName());
 		if($R->SBForwardIP == $localIP OR trim($R->SBForwardIP) == "localhost" OR substr(trim($R->SBForwardIP), 0, 4) == "127."){
 			$C->close();
-			return util::error("Diese Verbindung ist unzulässig!");
+			return SBUtil::error("Diese Verbindung ist unzulässig!");
 		}
 		
-		util::log("Connecting $args[1]:$R->SBForwardIP:$R->SBForwardPort ($args[0])");
+		SBUtil::log("Connecting $args[1]:$R->SBForwardIP:$R->SBForwardPort ($args[0])");
 		
 		$command = "ssh -o StrictHostKeyChecking=no -R$args[1]:$R->SBForwardIP:$R->SBForwardPort -N pipi@$args[2]";
 		exec(sprintf("%s > %s 2>&1 & echo $! > %s", $command, "/dev/null", "/home/pi/pids/ssh_".$args[0]));
 		
 		usleep(500000);
-		if(!util::isConnected(file_get_contents("/home/pi/pids/ssh_".$args[0]))){
+		if(!SBUtil::isConnected(file_get_contents("/home/pi/pids/ssh_".$args[0]))){
 			unlink("/home/pi/pids/ssh_".$args[0]);
 			
 			$command = "ssh -p222 -o StrictHostKeyChecking=no -R$args[1]:$R->SBForwardIP:$R->SBForwardPort -N pipi@$args[2]";
 			exec(sprintf("%s > %s 2>&1 & echo $! > %s", $command, "/dev/null", "/home/pi/pids/ssh_".$args[0]));
 			
 			usleep(500000);
-			if(!util::isConnected(file_get_contents("/home/pi/pids/ssh_".$args[0])))
+			if(!SBUtil::isConnected(file_get_contents("/home/pi/pids/ssh_".$args[0])))
 				unlink("/home/pi/pids/ssh_".$args[0]);
 			
 		}
@@ -58,19 +58,19 @@ class OnAction {
 		
 		$C->close();
 		
-		return util::ok("Verbindung aufgebaut");
+		return SBUtil::ok("Verbindung aufgebaut");
     } 
 	
 	public static function disconnectPort($args) {
-		$C = util::dbConnection();
+		$C = SBUtil::dbConnection();
 		$Q = $C->query("SELECT * FROM SBForward WHERE SBForwardID = '".$C->real_escape_string($args[0])."'");
 		$R = $Q->fetch_object();
 		if(!$R){
 			$C->close();
-			return util::error("SBForwardID $args[0] existiert nicht!");
+			return SBUtil::error("SBForwardID $args[0] existiert nicht!");
 		}
 		
-		util::log("Disconnecting $R->SBForwardIP:$R->SBForwardPort ($args[0])");
+		SBUtil::log("Disconnecting $R->SBForwardIP:$R->SBForwardPort ($args[0])");
 
 		exec("kill -9 ".file_get_contents("/home/pi/pids/ssh_".$args[0]));
 		
@@ -82,11 +82,11 @@ class OnAction {
 		
 		$C->close();
 		
-		return util::ok("Verbindung abgebaut");
+		return SBUtil::ok("Verbindung abgebaut");
     }
 	
 	public static function getConnections() {
-		$C = util::dbConnection();
+		$C = SBUtil::dbConnection();
 		
 		$allowed = self::allowed($C);
 		
@@ -98,7 +98,7 @@ class OnAction {
 			$R->SBForwardAllowed = $allowed;
 			
 			$pfile = "/home/pi/pids/ssh_".$R->SBForwardID;
-			if(file_exists($pfile) AND util::isConnected(file_get_contents($pfile))){
+			if(file_exists($pfile) AND SBUtil::isConnected(file_get_contents($pfile))){
 				$R->SBForwardConnected = 1;
 				$R->SBForwardTimeout = strtotime(preg_replace("/^job [0-9]+ at /", "", file_get_contents("/home/pi/pids/at_".$R->SBForwardID)));
 			}
@@ -113,11 +113,11 @@ class OnAction {
 			$connections[] = $R;
 		}
 		
-		util::log("Sending connections list to server (".count($connections)." entr".(count($connections) == 1 ? "y" : "ies").")");
+		SBUtil::log("Sending connections list to server (".count($connections)." entr".(count($connections) == 1 ? "y" : "ies").")");
 		
 		$C->close();
 		
-        return util::ok("", $connections);
+        return SBUtil::ok("", $connections);
     }
 	
 	public static function getInfo(){
