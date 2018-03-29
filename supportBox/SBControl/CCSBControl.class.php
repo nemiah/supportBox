@@ -39,7 +39,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 		$html .= "<ul>";
 		$AC = anyC::get("SBForward");
 		while($F = $AC->n()){
-			$html .= $F->A("SBForwardName")." (".$F->A("SBForwardIP").":".$F->A("SBForwardPort").")";
+			$html .= "<li>".$F->A("SBForwardName")." (".$F->A("SBForwardIP").":".$F->A("SBForwardPort").")</li>";
 		}
 		
 		$html .= "</ul>";
