@@ -45,7 +45,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 		$html .= "</div>";
 		
 		$html .= "<div style=\"display:inline-block;width:33.33%;vertical-align:top;\">";
-		$html .= "<h1>Neue Verbindungen</h1>";
+		$html .= "<h1>Verbindungen</h1>";
 		
 		$mode = mUserdata::getGlobalSettingValue("supportBoxNewConnection", -1);
 		

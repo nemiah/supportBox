@@ -87,8 +87,11 @@ class OnAction {
 	
 	public static function getConnections() {
 		$C = util::dbConnection();
-		$Q = $C->query("SELECT * FROM SBForward");
 		
+		if(!self::allowed($C))
+			return util::error("Deaktiviert");
+		
+		$Q = $C->query("SELECT * FROM SBForward");
 		$connections = array();
 		while($R = $Q->fetch_object()){
 			$R->SBForwardConnected = 0;
