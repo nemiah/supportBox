@@ -78,6 +78,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 			mUserdata::setUserdataS("supportBoxNewConnection", 0, "", -1);
 		}
 		
+		$preload = new PhpFileDB();
 		spl_autoload_unregister("phynxAutoloader");
 		
 		require_once Util::getRootPath().'supportBox/SBInfo/server/SBUtil.php';
