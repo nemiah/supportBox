@@ -80,15 +80,15 @@ class CCSBControl extends CCPage implements iCustomContent {
 		
 		spl_autoload_unregister("phynxAutoloader");
 		
-		require_once Util::getRootPath().'supportBox/SBInfo/server/util.php';
+		require_once Util::getRootPath().'supportBox/SBInfo/server/SBUtil.php';
 		require '/home/pi/thruway/vendor/autoload.php';
-		$C = util::dbConnection();
-		$cloud = util::cloud($C);
-		$connection = util::init($C);
+		$C = SBUtil::dbConnection();
+		$cloud = SBUtil::cloud($C);
+		$connection = SBUtil::init($C);
 		$C->close();
 		
 		$connection->on('open', function (\Thruway\ClientSession $session) use ($argv,  $cloud, $connection) {
-			$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [util::message("disconnected", $argv[2])], [], ["acknowledge" => true]);
+			$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [SBUtil::message("disconnected", $argv[2])], [], ["acknowledge" => true]);
 			$connection->close();
 		});
 

@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__."/../../../libraries/PhpFileDB.class.php";
-require_once __DIR__."/util.php";
+require_once __DIR__."/SBUtil.php";
 
-$C = util::dbConnection();
+$C = SBUtil::dbConnection();
 $Q = $C->query("SHOW TABLES;");
 while($R = $Q->fetch_object())
 	$C->query("DROP TABLE ".$R->Tables_in_supportbox);

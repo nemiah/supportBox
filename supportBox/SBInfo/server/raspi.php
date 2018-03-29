@@ -1,71 +1,71 @@
 <?php
 require '/home/pi/thruway/vendor/autoload.php';
 require_once __DIR__."/../../../libraries/PhpFileDB.class.php";
-require_once __DIR__."/util.php";
+require_once __DIR__."/SBUtil.php";
 require_once __DIR__."/OnAction.php";
 
 ini_set('default_socket_timeout', 2);
 
-util::log("-----------------------------------------");
-util::log("Started...");
+SBUtil::log("-----------------------------------------");
+SBUtil::log("Started...");
 
-$handle = @fsockopen(util::serverURL(), util::serverPort()); 
+$handle = @fsockopen(SBUtil::serverURL(), SBUtil::serverPort()); 
 while(!$handle){
 	sleep(5);
-	$handle = @fsockopen(util::serverURL(), util::serverPort()); 
+	$handle = @fsockopen(SBUtil::serverURL(), SBUtil::serverPort()); 
 }
 fclose($handle);
 
 
-$C = util::dbConnection();
-$cloud = util::cloud($C);
+$C = SBUtil::dbConnection();
+$cloud = SBUtil::cloud($C);
 if($cloud == null){
-	$connection = util::initNew();
+	$connection = SBUtil::initNew();
 	$connection->on('open', function (\Thruway\ClientSession $session) use ($connection) {
-		util::log("Connected to wss://".util::serverURL().":".util::serverPort());
-		util::log("Subscribing to channel hiimnew...");
+		SBUtil::log("Connected to wss://".SBUtil::serverURL().":".SBUtil::serverPort());
+		SBUtil::log("Subscribing to channel hiimnew...");
 		
 		$session->subscribe('it.furtmeier.supportbox.hiimnew', function ($args) use ($session) {
 			$call = $args[0];
 			if(!$call OR !isset($call->m))
 				return;
 
-			util::log("Server says to all '$call->m'");
+			SBUtil::log("Server says to all '$call->m'");
 
 			switch($call->m){
 				case "knockknock":
 					$localIP = getHostByName(getHostName());
-					util::sayImHere($session, "hiimnew", $localIP);
+					SBUtil::sayImHere($session, "hiimnew", $localIP);
 				break;
 			}
 		});
 	});
 	
 	$connection->open();
-	util::log("Shutdown.");
+	SBUtil::log("Shutdown.");
 	
 }
-$connection = util::init($C);
+$connection = SBUtil::init($C);
 $C->close();
 
 
-$serial = util::serial();
+$serial = SBUtil::serial();
 
 
 
 $connection->on('open', function (\Thruway\ClientSession $session) use ($connection, $serial,  $cloud) {
-	util::log("Connected to wss://".util::serverURL().":".util::serverPort());
+	SBUtil::log("Connected to wss://".SBUtil::serverURL().":".SBUtil::serverPort());
 	
     $session->subscribe('it.furtmeier.supportbox.serversays', function ($args) use ($session) {
         $call = $args[0];
         if(!$call OR !isset($call->m))
         	return;
         	
-		util::log("Server says to all '$call->m'");
+		SBUtil::log("Server says to all '$call->m'");
 				
         switch($call->m){
         	case "hi":
-        		util::sayHo($session);
+        		SBUtil::sayHo($session);
 	        break;
         }
     });
@@ -75,11 +75,11 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
         if(!$call OR !isset($call->m))
         	return;
         	
-		util::log("Server says to cloud '$call->m'");
+		SBUtil::log("Server says to cloud '$call->m'");
 		
         switch($call->m){
         	case "knockknock":
-        		util::sayImHere($session, $cloud);
+        		SBUtil::sayImHere($session, $cloud);
 	        break;
         }
     });
@@ -89,24 +89,24 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
         if(!$call OR !isset($call->m))
         	return;
         	
-		util::log("Somebody says to me '$call->m'");
+		SBUtil::log("Somebody says to me '$call->m'");
 		
         switch($call->m){
         	case "amihere":
-        		util::sayImHere($session, $serial);
+        		SBUtil::sayImHere($session, $serial);
 	        break;
         }
     });
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".connectPort", function($args) use ($session, $cloud){
 		$result = OnAction::connectPort($args);
-		$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [util::message("connected", $args[0])], [], ["acknowledge" => true]);
+		$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [SBUtil::message("connected", $args[0])], [], ["acknowledge" => true]);
 		return $result;
 	});
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".disconnectPort", function($args) use ($session, $cloud){
 		$result = OnAction::disconnectPort($args);
-		$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [util::message("disconnected", $args[0])], [], ["acknowledge" => true]);
+		$session->publish('it.furtmeier.supportbox.'.strtolower($cloud), [SBUtil::message("disconnected", $args[0])], [], ["acknowledge" => true]);
 		return $result;
 	});
 	
@@ -115,19 +115,19 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
 	});
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".doUpdate", function(){
-		return util::ok("", OnAction::doUpdate());
+		return SBUtil::ok("", OnAction::doUpdate());
 	});
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".getVersion", function(){
-		return util::ok("", OnAction::getVersion());
+		return SBUtil::ok("", OnAction::getVersion());
 	});
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".getInfo", function(){
-		return util::ok("", OnAction::getInfo());
+		return SBUtil::ok("", OnAction::getInfo());
 	});
 	
 });
 
 $connection->open();
-util::log("Shutdown.");
+SBUtil::log("Shutdown.");
 exit(0);
