@@ -1,6 +1,19 @@
 <?php
 
 class OnAction {
+	public static function allowed($C){
+		#$mode = mUserdata::getGlobalSettingValue("supportBoxNewConnection", -1);
+		$Q = $C->query("SELECT * FROM Userdata WHERE name = 'supportBoxNewConnection'");
+		$R = $Q->fetch_object();
+		if(!$R OR $R->wert == -1)
+			return true;
+		
+		if($R->wert == 0 OR ($R->wert > 0 AND time() > $R->wert))
+			return false;
+		
+		return true;
+	}
+	
 	public static function connectPort($args) {
 		$C = util::dbConnection();
 		$Q = $C->query("SELECT * FROM SBForward WHERE SBForwardID = '".$C->real_escape_string($args[0])."'");
@@ -9,6 +22,9 @@ class OnAction {
 			$C->close();
 			return util::error("SBForwardID $args[0] existiert nicht!");
 		}
+		
+		if(!self::allowed($C))
+			return util::error("Aktuell sind keine neuen Verbindungen erlaubt.");
 		
 		$localIP = getHostByName(getHostName());
 		if($R->SBForwardIP == $localIP OR trim($R->SBForwardIP) == "localhost" OR substr(trim($R->SBForwardIP), 0, 4) == "127."){

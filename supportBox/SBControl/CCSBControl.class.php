@@ -28,25 +28,56 @@ class CCSBControl extends CCPage implements iCustomContent {
 	function __construct() {
 		parent::__construct();
 		
-		#$this->loadPlugin("supportBox", "SBDevice");
-		/*$this->loadPlugin("open3A", "Stammdaten");
-		$this->loadPlugin("open3A", "Adressen");
-		$this->loadPlugin("open3A", "Textbausteine");
-		$this->loadPlugin("open3A", "Kategorien");
-		$this->loadPlugin("open3A", "Artikel");
-		$this->loadPlugin("open3A", "Kunden");
-		$this->loadPlugin("multiPOS", "Kassen");
-		$this->loadPlugin("multiPOS", "Tische");
-		$this->loadPlugin("multiPOS", "Bondrucker");*/
+		$this->loadPlugin("supportBox", "SBForward");
 	}
 	
 	function getCMSHTML() {
 		
-		return "Hi";
+		$html = "<div style=\"display:inline-block;width:33.33%;vertical-align:top;\">";
+		$html .= "<h1>Weiterleitungen</h1>";
+		
+		$html .= "<ul>";
+		$AC = anyC::get("SBForward");
+		while($F = $AC->n()){
+			$html .= $F->A("SBForwardName")." (".$F->A("SBForwardIP").":".$F->A("SBForwardPort").")";
+		}
+		
+		$html .= "</ul>";
+		$html .= "</div>";
+		
+		$html .= "<div style=\"display:inline-block;width:33.33%;vertical-align:top;\">";
+		$html .= "<h1>Status supportBox</h1>";
+		
+		$mode = mUserdata::getGlobalSettingValue("supportBoxNewConnection", -1);
+		
+		$status = 1;
+		if($mode > 0)
+			$status = 2;
+		if($mode == 0 OR ($mode > 0 AND time() > $mode))
+			$status = 3;
+		
+		$html .= "<div onclick=\"CustomerPage.rme('setMode', [1], function(){ document.location.reload(); });\" style=\"cursor:pointer;padding:1em;".($status != 1 ? "background-color:#BBB;" : "")."\" class=\"".($status === 1 ? "confirm" : "")."\">Verbindungen immer zulassen</div>";
+		$html .= "<div onclick=\"CustomerPage.rme('setMode', [2], function(){ document.location.reload(); });\" style=\"cursor:pointer;padding:1em;margin-top:1em;".($status != 2 ? "background-color:#BBB;" : "")."\" class=\"".($status === 2 ? "confirm" : "")."\">Verbindungen für 12 Stunden zulassen ".($status === 2 ? "(bis ".(Util::CLDateTimeParser($mode)).")" : "")."</div>";
+		$html .= "<div onclick=\"CustomerPage.rme('setMode', [3], function(){ document.location.reload(); });\" style=\"cursor:pointer;padding:1em;margin-top:1em;".($status != 3 ? "background-color:#BBB;" : "")."\" class=\"".($status === 3 ? "confirm" : "")."\">Keine Verbindungen zulassen</div>";
+		
+		$html .= "</div>";
+		
+		return $html;
 
 	}
 	
-	
+	public function setMode($data){
+		if($data["P0"] == 1){
+			mUserdata::setUserdataS("supportBoxNewConnection", -1, "", -1);
+		}
+		
+		if($data["P0"] == 2){
+			mUserdata::setUserdataS("supportBoxNewConnection", time() + 3600 * 12, "", -1);
+		}
+		
+		if($data["P0"] == 3){
+			mUserdata::setUserdataS("supportBoxNewConnection", 0, "", -1);
+		}
+	}
 }
-
 ?>
