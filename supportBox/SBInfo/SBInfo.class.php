@@ -22,6 +22,8 @@ class SBInfo extends UnpersistentClass {
 	public static $server = "https://cloud.furtmeier.it";
 	public static function serial() {
 		$cpuinfo = file_get_contents("/proc/cpuinfo");
+		if(file_exists("/home/pi/cpuinfo"))
+			$cpuinfo = file_get_contents("/home/pi/cpuinfo");
 
 		$ex = explode("\n", trim($cpuinfo));
 
