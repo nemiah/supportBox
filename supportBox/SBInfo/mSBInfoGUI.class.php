@@ -170,10 +170,11 @@ root: pi
 		
 		$result = exec('sudo -u pi ssh-keygen -lf /home/pi/.ssh/id_rsa.pub');
 		$content = explode(' ', $result);
-				
+		$pubkey = trim(exec('sudo -u pi cat /home/pi/.ssh/id_rsa.pub'));
+		
 		mUserdata::setUserdataS("SBCloud", $cloudID, "", -1);
 		mUserdata::setUserdataS("SBEMail", $email, "", -1);
-		$data = file_get_contents(SBInfo::$server."/ubiquitous/CustomerPage/?D=supportBox/SBDevice&cloud=$cloudID&method=register&serial=".SBInfo::serial()."&comment=". urlencode($comment)."&pubkey=".urlencode(file_get_contents("/home/pi/.ssh/id_rsa.pub"))."&fingerprint=". urlencode($content[1]));
+		$data = file_get_contents(SBInfo::$server."/ubiquitous/CustomerPage/?D=supportBox/SBDevice&cloud=$cloudID&method=register&serial=".SBInfo::serial()."&comment=". urlencode($comment)."&pubkey=".urlencode($pubkey)."&fingerprint=". urlencode($content[1]));
 		$data = json_decode($data);
 		
 		if($data->status == "Error"){
