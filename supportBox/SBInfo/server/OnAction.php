@@ -27,7 +27,7 @@ class OnAction {
 			return SBUtil::error("Aktuell sind keine neuen Verbindungen erlaubt.");
 		
 		$localIP = getHostByName(getHostName());
-		if($R->SBForwardIP == $localIP OR trim($R->SBForwardIP) == "localhost" OR substr(trim($R->SBForwardIP), 0, 4) == "127."){
+		if(SBUtil::serial() != "00000000demodemo" AND ($R->SBForwardIP == $localIP OR trim($R->SBForwardIP) == "localhost" OR substr(trim($R->SBForwardIP), 0, 4) == "127.")){
 			$C->close();
 			return SBUtil::error("Diese Verbindung ist unzulässig!");
 		}
