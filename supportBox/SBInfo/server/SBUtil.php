@@ -14,7 +14,9 @@ class SBUtil {
 	
 	public static function serial() {
 		$cpuinfo = file_get_contents("/proc/cpuinfo");
-
+		if(file_exists("/home/pi/cpuinfo"))
+			$cpuinfo = file_get_contents("/proc/cpuinfo");
+		
 		$ex = explode("\n", trim($cpuinfo));
 
 		$info = array();
