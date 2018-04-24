@@ -72,7 +72,6 @@ slaac private
 $static";
 		
 		exec("echo \"$config\" | sudo tee /etc/dhcpcd.conf > /dev/null");
-		exec("sudo /sbin/reboot");
 	}
 
 }
