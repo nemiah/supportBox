@@ -19,7 +19,7 @@
  */
 class SBNetwork extends PersistentObject {
 	function newMe($checkUserData = true, $output = false) {
-		$id = parent::newMe($checkUserData, $output);
+		$id = parent::newMe($checkUserData, false);
 		
 		mSBNetworkGUI::writeDHCPDConf();
 		
@@ -27,9 +27,11 @@ class SBNetwork extends PersistentObject {
 	}
 	
 	function saveMe($checkUserData = true, $output = false) {
-		parent::saveMe($checkUserData, $output);
+		parent::saveMe($checkUserData, false);
 		
 		mSBNetworkGUI::writeDHCPDConf();
+		
+		Red::messageSaved();
 	}
 	
 	function reboot(){
