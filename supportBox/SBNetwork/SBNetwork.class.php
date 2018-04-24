@@ -18,5 +18,18 @@
  *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class SBNetwork extends PersistentObject {
+	function newMe($checkUserData = true, $output = false) {
+		$id = parent::newMe($checkUserData, $output);
+		
+		mSBNetworkGUI::writeDHCPDConf();
+		
+		return $id;
+	}
+	
+	function saveMe($checkUserData = true, $output = false) {
+		parent::saveMe($checkUserData, $output);
+		
+		mSBNetworkGUI::writeDHCPDConf();
+	}
 }
 ?>
