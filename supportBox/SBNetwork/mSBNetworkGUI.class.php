@@ -72,7 +72,7 @@ slaac private
 
 $static";
 		
-		exec("echo \"$config\" | sudo tee /etc/dhcpcd.conf > /dev/null");
+		var_dump(exec("echo \"$config\" | sudo tee /etc/dhcpcd.conf > /dev/null"));
 	}
 
 }
