@@ -56,8 +56,7 @@ static routers=".$N->A("SBNetworkGateway")."
 static domain_name_servers=".$N->A("SBNetworkDNS");
 		}
 		
-		$config = "
-hostname
+		$config = "hostname
 clientid
 persistent
 option rapid_commit
@@ -72,7 +71,7 @@ slaac private
 
 $static";
 		
-		var_dump(exec("echo \"$config\" | sudo tee /etc/dhcpcd.conf > /dev/null"));
+		exec("echo \"$config\" | sudo tee /etc/dhcpcd.conf > /dev/null");
 	}
 
 }

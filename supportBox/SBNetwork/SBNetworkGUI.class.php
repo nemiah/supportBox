@@ -34,7 +34,9 @@ class SBNetworkGUI extends SBNetwork implements iGUIHTML2 {
 		
 		$gui->toggleFields("SBNetworkMode", "static", array("SBNetworkSubnet", "SBNetworkIP", "SBNetworkGateway", "SBNetworkDNS"));
 		
-		return $gui->getEditHTML();
+		$info = "<p class=\"highlight\" style=\"padding:5px;\">Nach dem Speichern wird die supportBox automatisch neu gestartet und ist dann unter der neuen IP erreichbar.</p>";
+		
+		return $gui->getEditHTML().$info;
 	}
 }
 ?>
