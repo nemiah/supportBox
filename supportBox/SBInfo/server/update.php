@@ -21,6 +21,6 @@ $C->query("ALTER TABLE `SBNetwork`
 $C->query("ALTER TABLE `SBNetwork`
   MODIFY `SBNetworkID` int(10) NOT NULL AUTO_INCREMENT;");
 
-var_dump(exec("echo \"". file_get_contents(__DIR__."/visudo")."\" | sudo tee /etc/sudoers.d/020_supportbox > /dev/null"));
+exec("echo \"". file_get_contents(__DIR__."/visudo")."\" | sudo tee /etc/sudoers.d/020_supportbox > /dev/null");
 
 echo "Done!";
