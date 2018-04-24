@@ -24,7 +24,7 @@ class SBNetwork extends PersistentObject {
 		mSBNetworkGUI::writeDHCPDConf();
 		
 		echo "message:'Daten gespeichert'";
-		exec("sleep 2 && sudo /sbin/reboot");
+		exec("sleep 2 && sudo /sbin/reboot &");
 	}
 	
 	function saveMe($checkUserData = true, $output = false) {
@@ -33,7 +33,7 @@ class SBNetwork extends PersistentObject {
 		mSBNetworkGUI::writeDHCPDConf();
 		
 		echo "message:'Daten gespeichert'";
-		exec("sleep 2 && sudo /sbin/reboot");
+		exec("sleep 2 && sudo /sbin/reboot &");
 	}
 }
 ?>
