@@ -19,21 +19,21 @@
  */
 class SBNetwork extends PersistentObject {
 	function newMe($checkUserData = true, $output = false) {
-		parent::newMe($checkUserData, false);
+		$id = parent::newMe($checkUserData, $output);
 		
 		mSBNetworkGUI::writeDHCPDConf();
 		
-		echo "message:'Daten gespeichert'";
-		exec("sleep 2 && sudo /sbin/reboot &");
+		return $id;
 	}
 	
 	function saveMe($checkUserData = true, $output = false) {
-		parent::saveMe($checkUserData, false);
+		parent::saveMe($checkUserData, $output);
 		
 		mSBNetworkGUI::writeDHCPDConf();
-		
-		echo "message:'Daten gespeichert'";
-		exec("sleep 2 && sudo /sbin/reboot &");
+	}
+	
+	function reboot(){
+		exec("sudo /sbin/reboot");
 	}
 }
 ?>

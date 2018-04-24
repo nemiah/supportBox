@@ -36,6 +36,9 @@ class SBNetworkGUI extends SBNetwork implements iGUIHTML2 {
 		
 		$info = "<p class=\"highlight\" style=\"padding:5px;\">Nach dem Speichern wird die supportBox automatisch neu gestartet und ist dann unter der neuen IP erreichbar.</p>";
 		
+		$gui->addToEvent("onNew", OnEvent::rme($this, "reboot"));
+		$gui->addToEvent("onSave", OnEvent::rme($this, "reboot"));
+		
 		return $gui->getEditHTML().$info;
 	}
 }
