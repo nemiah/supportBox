@@ -14,6 +14,18 @@ class OnAction {
 		return true;
 	}
 	
+	public static function allowedUntil($C){
+		$Q = $C->query("SELECT * FROM Userdata WHERE name = 'supportBoxNewConnection'");
+		$R = $Q->fetch_object();
+		if(!$R OR $R->wert == -1)
+			return -1;
+		
+		if($R->wert == 0 OR ($R->wert > 0 AND time() > $R->wert))
+			return 0;
+		
+		return $R->wert;
+	}
+	
 	public static function connectPort($args) {
 		$C = SBUtil::dbConnection();
 		$Q = $C->query("SELECT * FROM SBForward WHERE SBForwardID = '".$C->real_escape_string($args[0])."'");
@@ -115,9 +127,12 @@ class OnAction {
 		
 		SBUtil::log("Sending connections list to server (".count($connections)." entr".(count($connections) == 1 ? "y" : "ies").")");
 		
+		$add = array();
+		$add->allowedUntil = self::allowedUntil($C);
+		
 		$C->close();
 		
-        return SBUtil::ok("", $connections);
+        return SBUtil::ok("", $connections, $add);
     }
 	
 	public static function getInfo(){

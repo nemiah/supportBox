@@ -75,12 +75,15 @@ class SBUtil {
 		return json_encode($response, JSON_UNESCAPED_UNICODE);
 	}
 	
-	public static function ok($message, $data = null){
+	public static function ok($message, $data = null, $add = array()){
 		$response = new stdClass();
 		$response->status = "Ok";
 		$response->message = $message;
 		if($data)
 			$response->data = $data;
+		
+		foreach($add AS $k => $v)
+			$response->$k = $v;
 		
 		return json_encode($response, JSON_UNESCAPED_UNICODE);
 	}
