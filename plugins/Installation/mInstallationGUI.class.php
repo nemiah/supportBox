@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 
@@ -546,6 +546,7 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 				'allow_self_signed' => true
 			)
 		);
+		#$mimeMail2->Hostname = "cloud01.furtmeier.it";
 		$mimeMail2->SMTPDebug = 2;
 		#$mimeMail2->SMTPSecure = 'tls';
 		$mimeMail2->CharSet = "UTF-8";

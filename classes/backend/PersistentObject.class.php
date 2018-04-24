@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class PersistentObject {
 	protected $ID;
@@ -155,6 +155,8 @@ class PersistentObject {
 	}*/
 
 	function deleteMe() {
+		Aspect::joinPoint("before", $this, get_class($this)."::deleteMe", $this->A);
+		
 		mUserdata::checkRestrictionOrDie("cantDelete".str_replace("GUI","",get_class($this)));
 		try {
 			if(Session::isPluginLoaded("mArchiv"))
@@ -318,14 +320,14 @@ class PersistentObject {
 
         $this->ID = $this->Adapter->makeNewLine2($this->getClearClass(get_class($this)), $this->A);
 
+		Aspect::joinPoint("after", $this, get_class($this)."::newMe", $this->A);
+		
         if($output OR $this->echoIDOnNew){
 	        if($this->echoIDOnNew) {
 				echo $this->ID;
 			} else
 				Red::messageCreated(array("ID" => $this->ID));
 		}
-		
-		Aspect::joinPoint("after", $this, get_class($this)."::newMe", $this->A);
 		
         return $this->ID;
 	}

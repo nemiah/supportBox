@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 
 class T {
@@ -33,7 +33,7 @@ class T {
 	}
 	
 	public static function _($text){
-		if(!function_exists("bindtextdomain")){
+		if(!function_exists("bindtextdomain") OR strpos($_SERVER["DOCUMENT_ROOT"], "/Applications/MAMP") !== false){
 			$args = func_get_args();
 			if(count($args) > 1){
 				for($i = count($args); $i > 1; $i--)
@@ -65,7 +65,7 @@ class T {
 				self::$poFileContent[self::$currentDomain] = file_get_contents(self::$domainPaths[self::$currentDomain]."/".Session::getLanguage()."/LC_MESSAGES/messages".self::$currentDomain.".po");
 			}
 		}
-		
+
 		$text2 = dgettext("messages".self::$currentDomain, $text);
 		
 		if($text2 == $text AND count(self::$domains) > 1){

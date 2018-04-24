@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class HTMLForm {
 	protected $id;
@@ -590,7 +590,7 @@ class HTMLForm {
 			$Input->isDisplayMode(!$this->editable);
 		} else {
 			$method = explode("::", $this->options[$v][0]);
-			$Input = Util::invokeStaticMethod($method[0], $method[1], array(isset($this->values[$v]) ? $this->values[$v] : null, "", isset($this->options[$v][1]) ? $this->options[$v][1] : null));
+			$Input = Util::invokeStaticMethod($method[0], $method[1], array(isset($this->values[$v]) ? $this->values[$v] : null, "", isset($this->options[$v][1]) ? $this->options[$v][1] : null, (isset($this->options[$v][2]) ? $this->options[$v][2] : null)));
 		}
 
 		return $Input;

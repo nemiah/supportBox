@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 
 class HTMLGUI implements icontextMenu {
@@ -639,6 +639,10 @@ class HTMLGUI implements icontextMenu {
 		$this->onlyDisplayMode = $b;
 	}
 	
+	function showInputs(){
+		return !$this->onlyDisplayMode;
+	}
+	
 	function setDeleteInDisplayMode($b) {
 		$this->deleteInDisplayMode = $b;
 	}
@@ -856,7 +860,7 @@ class HTMLGUI implements icontextMenu {
 		if(isset($this->parsers[$as])) {
 			$r = "";
 			$m = explode("::", $this->parsers[$as]);
-			$r = Util::invokeStaticMethod($m[0], $m[1], array((isset($this->attributes->$as) ? $this->attributes->$as : ""), $this->object, implode("%§%",$this->parserParameters[$as])));
+			$r = Util::invokeStaticMethod($m[0], $m[1], array((isset($this->attributes->$as) ? $this->attributes->$as : ""), $this->object, implode("%§%",$this->parserParameters[$as]), $this));
 			#return("\$r = ".$this->parsers[$as]."(\"".(isset($this->attributes->$as) ? $this->attributes->$as : "")."\",\"\",\"".implode("%§%",$this->parserParameters[$as])."\");");
 			return $r;
 		}

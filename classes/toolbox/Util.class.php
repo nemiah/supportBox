@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class Util {
 	public static function ext($filename){
@@ -321,9 +321,8 @@ class Util {
 				$r .= "{firma}\n";
 				$r .= "{abteilung}\n";
 				$r .= "{position}{anredeWM}{titelPrefix}{vorname}{nachname}{titelSuffix}\n";
-				$r .= "{ort}\n";
+				$r .= "{plz} {ort}\n";
 				$r .= "{strasse}{nr}\n";
-				$r .= "{plz}\n";
 				$r .= "{land}";
 			break;
 		
@@ -642,6 +641,9 @@ class Util {
 			break;
 			case "1":
 				return $format["femaleShort"];
+			break;
+			case "4":
+				return $format["familyShort"];
 			break;
 		
 			default:
@@ -1357,7 +1359,7 @@ class Util {
 		$filename = str_replace(array("Ç","ç","É","È","Ê","é","è","ê", "ë", "Č"), array("C","c","E","E","E","e","e","e", "e", "C"), $filename);
 		$filename = str_replace(array("Í","Ì","í","ì", "ï","Õ","Ô","Ó"), array("I","I","i","i", "i","O","O","O"), $filename);
 		$filename = str_replace(array("õ","ô","ó","Ú","ú"), array("o","o","o","U","u"), $filename);
-    	$filename = str_replace(array(":", "–", "\n", "'", "?", "(", ")", ";", "\"", "+", "<", ">", ",", "´", "`", "|"), array("_", "-", "", "", "", "", "", "", "", "", "", "", "", "", "", "_"), $filename);
+    	$filename = str_replace(array(":", "–", "\n", "'", "?", "(", ")", ";", "\"", "+", "<", ">", ",", "´", "`", "|", "%"), array("_", "-", "", "", "", "", "", "", "", "", "", "", "", "", "", "_", ""), $filename);
 		$filename = str_replace(array("__"), array("_"), $filename);
 
 		return $filename;
@@ -1371,7 +1373,7 @@ class Util {
 			$CH = self::getCloudHost();
 			$physion = Session::physion();
 			if($CH AND isset($CH->usePreviewRewrite) AND $CH->usePreviewRewrite)
-				echo "<!DOCTYPE html><html><script type=\"text/javascript\">document.location='../preview/".basename($filename)."".($physion ? "?physion=$physion[0]" : "")."';</script></html>";
+				echo "<!DOCTYPE html><html><script type=\"text/javascript\">document.location='../preview/".urlencode(basename($filename))."".($physion ? "?physion=$physion[0]" : "")."';</script></html>";
 			else
 				echo "<!DOCTYPE html><html><script type=\"text/javascript\">document.location='./showPDF.php".($physion ? "?physion=$physion[0]" : "")."';</script></html>";
 		} else

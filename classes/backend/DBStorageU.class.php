@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class DBStorageU {
 	protected $instance;
@@ -50,7 +50,7 @@ class DBStorageU {
 	
 	public function renewConnection(){
 		$this->connection = @mysql_pconnect($_SESSION["DBData"]["host"],$_SESSION["DBData"]["user"],$_SESSION["DBData"]["password"]);# or die ("MySQL-DB nicht erreichbar");
-		if(mysql_error() AND (mysql_errno() == 1045 OR mysql_errno() == 2002 OR mysql_errno() == 2003 OR mysql_errno() == 2005)) throw new NoDBUserDataException();
+		if(mysql_error() AND (mysql_errno() == 1045 OR mysql_errno() == 2002 OR mysql_errno() == 2003 OR mysql_errno() == 2005 OR mysql_errno() == 1698)) throw new NoDBUserDataException();
 		if(mysql_error() AND mysql_errno() == 1049) throw new DatabaseNotFoundException();
 		#echo mysql_error();
 		@mysql_select_db($_SESSION["DBData"]["datab"], $this->connection);

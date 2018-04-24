@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class HTMLGUIX {
 
@@ -185,7 +185,7 @@ class HTMLGUIX {
 			$c = $this->loadLanguageClass("HTML");
 			$this->texts = $c->getEditTexts();
 		}*/
-
+		
 		$html = "";
 		if(PMReflector::implementsInterface($pluginName,"iNewWithValues") AND $userCanCreate) $os = "1";
 		else $os = "0";
@@ -596,6 +596,10 @@ class HTMLGUIX {
 		$this->showSave = $showSave;
 		$this->showInputs = $showInputs;
 	}
+	
+	public function showInputs(){
+		return $this->showInputs;
+	}
 
 	private $form = null;
 	function getForm(){
@@ -638,7 +642,7 @@ class HTMLGUIX {
 			$F->setDescriptionField($n, T::_($l));
 
 		foreach($this->parsers AS $n => $l)
-			$F->setType($n, "parser", null, array($l, $this->object));
+			$F->setType($n, "parser", null, array($l, $this->object, $this));
 
 		foreach($this->spaces AS $n => $l)
 			$F->insertSpaceAbove($n, T::_($l));

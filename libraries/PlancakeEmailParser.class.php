@@ -217,7 +217,7 @@ class PlancakeEmailParser {
 			$detectedContentType = true;
 			
 			
-			if (preg_match('/charset=(.*)/i', $line, $matches)) 
+			if ($waitingForContentStart AND preg_match('/charset=(.*)/i', $line, $matches)) 
 				$charset = strtoupper(trim($matches[1], '"'));
 				
 			if ($contentTransferEncoding == null && preg_match('/^Content-Transfer-Encoding: ?(.*)/i', $line, $matches)) 
@@ -255,7 +255,7 @@ class PlancakeEmailParser {
 			// FORMAT=FLOWED, despite being popular in emails, it is not
 			// supported by iconv
 			$charset = str_replace("FORMAT=FLOWED", "", $charset);
-
+			
 			$body = iconv($charset, 'UTF-8//TRANSLIT', $body);
 
 			if ($body === FALSE) { // iconv returns FALSE on failure

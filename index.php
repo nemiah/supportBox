@@ -1,4 +1,4 @@
-<?php 
+<?php
 /**
  *  This file is part of phynx.
 
@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 
 if(!function_exists("hash_equals")){
@@ -792,7 +792,7 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 							alt="Desktop"><xsl:attribute name="src"><xsl:value-of select="iconDesktop" /></xsl:attribute></img>
 					</xsl:if>-->
 					<?php if(Environment::getS("showCopyright", "1") == "1")
-						echo Environment::getS("contentCopyright", 'Copyright (C) 2007 - 2017 by <a href="http://www.Furtmeier.IT">Furtmeier Hard- und Software</a>. This program comes with ABSOLUTELY NO WARRANTY;<br>this is free software, and you are welcome to redistribute it under certain conditions; see <a href="gpl.txt">gpl.txt</a> for details.<!--<br />Thanks to the authors of the libraries and icons used by this program. <a href="javascript:contentManager.loadFrame(\'contentRight\',\'Credits\');">View credits.</a>-->');
+						echo Environment::getS("contentCopyright", 'Copyright (C) 2007 - 2018 by <a href="http://www.Furtmeier.IT">Furtmeier Hard- und Software</a>. This program comes with ABSOLUTELY NO WARRANTY;<br>this is free software, and you are welcome to redistribute it under certain conditions; see <a href="gpl.txt">gpl.txt</a> for details.<!--<br />Thanks to the authors of the libraries and icons used by this program. <a href="javascript:contentManager.loadFrame(\'contentRight\',\'Credits\');">View credits.</a>-->');
 					?>
 				</p>
 			</div>

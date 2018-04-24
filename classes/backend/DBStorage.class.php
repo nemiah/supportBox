@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 
 class DBStorage {
@@ -349,7 +349,7 @@ class DBStorage {
 		}*/
 		
 		foreach($fields AS $key => $value){
-			$t->$value = $this->fixUtf8(stripslashes($t->$value));
+			$t->$value = $this->fixUtf8($t->$value); //REMOVED stripslashes on 20180321 because of JSON data
 						
 			/*if($typsicher){
 				if(isset($types[$value])) $typObj = $types[$value];
@@ -635,7 +635,7 @@ class DBStorage {
 		#	$fields = PMReflector::getAttributesArrayAnyObject($t);
 
 		foreach($t AS $key => $value)
-			$A->$key = $this->fixUtf8(stripslashes($value));
+			$A->$key = $this->fixUtf8($value);//REMOVED stripslashes on 20180321 because of JSON data
 
 
 		if(count($this->parsers) > 0)
@@ -763,7 +763,7 @@ class DBStorage {
 
 		$fields = null;
 		while($t = $q->fetch_assoc()){
-			$t = array_map("stripslashes",$t);
+			#$t = array_map("stripslashes",$t);//REMOVED stripslashes on 20180321 because of JSON data
 			if(count($this->parsers) > 0) 
 				foreach($this->parsers AS $key => $value)
 					if(isset($t[$key])) #eval("\$t[\$key] = ".$value."(\"".$t[$key]."\",\"load\");");

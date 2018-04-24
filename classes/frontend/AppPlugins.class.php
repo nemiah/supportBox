@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class AppPlugins {
 	private $folders = array();
@@ -149,13 +149,13 @@ class AppPlugins {
 				$f = explode(".",$file);
 				if($f[0]{0} == "-") continue;
 
-				if($f[1] == "xml") {
-					$c = new XMLPlugin("$p/$folder/$file", $allowedPlugins);
-				} else {
-					require_once "$p/$folder/$file";
-					$f = $f[0];
-					$c = new $f();
-				}
+				#if($f[1] == "xml") {
+				$c = new XMLPlugin("$p/$folder/$file", $allowedPlugins);
+				#} else {
+				#	require_once "$p/$folder/$file";
+				#	$f = $f[0];
+				#	$c = new $f();
+				#}
 				
 				$_SESSION["messages"]->startMessage("trying to register ".$c->registerName().": ");
 
@@ -243,7 +243,7 @@ class AppPlugins {
 				#}
 					
 				$n = $c->registerClassName();
-				if($n != "" AND $appFolder == null){
+				if($n != "" AND ($appFolder == null OR $appFolder == "customer")){
 					try {
 						$nc = new $n();
 						if(method_exists($nc,'getCollectionOf')){
@@ -266,20 +266,20 @@ class AppPlugins {
 					}
 				}
 				
-				if($f[1] == "xml"){
-					$fld = $c->registerFolder();
-					if(!is_array($fld))
-						$fld = array($fld);
-					
-					foreach($fld AS $folderName){
-						$path = "./$folder/$folderName/".$c->registerClassName().".class.php";
-						
-						if(file_exists($path))
-							require_once $path;
-						elseif(file_exists(".".$path))
-							require_once ".".$path;
-					}
+				#if($f[1] == "xml"){
+				$fld = $c->registerFolder();
+				if(!is_array($fld))
+					$fld = array($fld);
+
+				foreach($fld AS $folderName){
+					$path = "./$folder/$folderName/".$c->registerClassName().".class.php";
+
+					if(file_exists($path))
+						require_once $path;
+					elseif(file_exists(".".$path))
+						require_once ".".$path;
 				}
+				#}
 				
 				if($appFolder == null OR $appFolder == "customer")
 					$c->doSomethingElse();
@@ -296,6 +296,8 @@ class AppPlugins {
 	
 	public function getMenuEntries(){
 		$entries = $this->menuEntries;
+		$entries = Aspect::joinPoint("menu", $this, __METHOD__, array($entries), $entries);
+		
 		$hidden = Environment::getS("hiddenPlugins", array());
 		
 		foreach($entries as $key => $value){
@@ -331,13 +333,14 @@ class AppPlugins {
 	
 	public function getIsAdminOnly($plugin){
 		$plugin = str_replace("GUI", "", $plugin);
-		
-		if(isset($this->isAdminOnlyByPlugin[$plugin])) return $this->isAdminOnlyByPlugin[$plugin];
+
+		if(isset($this->isAdminOnlyByPlugin[$plugin])) 
+			return $this->isAdminOnlyByPlugin[$plugin];
 
 		$c = array();
 		foreach($this->collectors AS $k => $v)
 			$c[$v] = $k;
-		
+
 		#$c = array_flip($this->collectors); //deprecated
 
 		if(!isset($c[$plugin])) return false;
@@ -348,7 +351,7 @@ class AppPlugins {
 	}
 	
 	public function getIcons(){
-		return $this->icons;
+		return Aspect::joinPoint("alter", $this, __METHOD__, array($this->icons), $this->icons);
 	}
 	
 	public function isPluginLoaded($pluginName){

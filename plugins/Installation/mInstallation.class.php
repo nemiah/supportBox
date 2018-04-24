@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class mInstallation extends anyC {
 	private $folder = "./system/DBData/";
@@ -33,14 +33,14 @@ class mInstallation extends anyC {
 
 	public function setupAllTables($echo = 0){
 		$return = array();
-		if(file_exists(Util::getRootPath()."/system/CI.pfdb.php")){
+		if(file_exists(Util::getRootPath()."system/CI.pfdb.php")){
 			$return["all"] = "Using fast setup mode...";
 			
 			$DBG = new DBStorage();
 			$C = $DBG->getConnection();
 			
 			$DB = new PhpFileDB();
-			$DB->setFolder("/var/www/html/system/");
+			$DB->setFolder(Util::getRootPath()."system/");
 			$Q = $DB->pfdbQuery("SELECT * FROM CI");
 			while($R = $DB->pfdbFetchAssoc($Q)){
 				if(!trim($R["MySQL"]))
