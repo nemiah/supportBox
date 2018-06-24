@@ -37,6 +37,10 @@ echo "Setze Postfix relayhost zurück\n";
 exec("echo \"\" | sudo tee /etc/postfix/sasl_passwd  > /dev/null");
 exec("sudo postmap /etc/postfix/sasl_passwd");
 
+
+echo "Leere sessions-Verzeichnis\n";
+exec("sudo bash -c 'rm /var/lib/php/sessions/sess_*'");
+
 echo "Starte Dienste neu…\n";
 exec("sudo /usr/bin/supervisorctl restart all");
 
