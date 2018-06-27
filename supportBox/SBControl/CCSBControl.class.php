@@ -32,11 +32,18 @@ class CCSBControl extends CCPage implements iCustomContent {
 	}
 	
 	function getCMSHTML() {
+		$AC = anyC::get("SBForward");
+		try {
+			$AC->lCV3();
+		} catch (TableDoesNotExistException $e){
+			return "<p>Diese supportBox wurde noch nicht eingerichtet!</p>";
+		}
+		
 		$html = "<div style=\"display:inline-block;width:33.33%;vertical-align:top;\">";
 		$html .= "<h1>Weiterleitungen</h1>";
 		
 		$html .= "<ul style=\"margin-top:0;\">";
-		$AC = anyC::get("SBForward");
+		
 		while($F = $AC->n())
 			$html .= "<li>".$F->A("SBForwardName")." (".$F->A("SBForwardIP").":".$F->A("SBForwardPort").")</li>";
 		
