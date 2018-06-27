@@ -62,6 +62,9 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 			$hide = true;
 		}
 		
+		if(Applications::activeApplication() == "supportBox")
+			$hide = true;
+		
 		$gui = new HTMLGUI();
 		$gui->setName("Datenbank-Zugangsdaten");
 		if($this->collector != null) $gui->setAttributes($this->collector);
