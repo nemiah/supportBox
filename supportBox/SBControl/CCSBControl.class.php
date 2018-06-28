@@ -39,6 +39,10 @@ class CCSBControl extends CCPage implements iCustomContent {
 			return "<p>Diese supportBox wurde noch nicht eingerichtet!</p>";
 		}
 		
+		$cloud = mUserdata::getGlobalSettingValue("SBCloud");
+		if(!$cloud)
+			return "<p>Diese supportBox wurde noch nicht eingerichtet!</p>";
+		
 		$html = "<div style=\"display:inline-block;width:33.33%;vertical-align:top;\">";
 		$html .= "<h1>Weiterleitungen</h1>";
 		
