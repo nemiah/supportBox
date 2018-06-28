@@ -44,7 +44,7 @@ echo "Setze Berechtigungen…\n";
 exec("sudo chmod 666 /var/www/html/system/DBData/Installation.pfdb.php");
 
 echo "Setze Passwort von Benutzer 'pi' auf 'pi'\n";
-exec('echo -e "hallo\nhallo" | sudo passwd pi');
+exec("echo -e \"pi\npi\" | sudo passwd pi");
 
 echo "Starte Dienste neu…\n";
 exec("sudo /usr/bin/supervisorctl restart all");
