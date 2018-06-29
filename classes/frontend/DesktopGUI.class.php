@@ -20,7 +20,7 @@
 class DesktopGUI extends UnpersistentClass implements iGUIHTML2 {
 	public function getHTML($id){
 		
-		if($_SESSION["S"]->isUserAdmin()) {
+		if(Applications::activeApplication() != "supportBox" AND $_SESSION["S"]->isUserAdmin()) {
 			$D = new ADesktopGUI();
 			return $D->getHTML($id);
 		}
