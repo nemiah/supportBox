@@ -109,8 +109,8 @@ class CCSBControl extends CCPage implements iCustomContent {
 		echo "<p style=\"font-size:20px;\">
 			Setup beendet!</p>
 			<p style=\"font-size:20px;\">Sie können sich jetzt mit folgenden Daten an der supportBox anmelden:</p>
-			<p style=\"font-size:20px;\">Benutzer 'Admin'</p>
-			<p style=\"font-size:20px;\">Passwort 'Admin'<br>
+			<p style=\"font-size:20px;\">Benutzer: 'Admin'<br>
+			Passwort: 'Admin'<br>
 			<p style=\"font-size:20px;\"><a href=\"/\">Weiter</a></p>";
 	}
 	
