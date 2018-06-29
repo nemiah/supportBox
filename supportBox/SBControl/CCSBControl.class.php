@@ -81,7 +81,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 		
 		print_r($_GET);
 		$I = new mInstallationGUI();
-		$I->updateAllTables(true);
+		$I->setupAllTables(true);
 	}
 	
 	public function setMode($data){
