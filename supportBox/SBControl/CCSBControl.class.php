@@ -40,6 +40,10 @@ class CCSBControl extends CCPage implements iCustomContent {
 		try {
 			$AC->lCV3();
 		} catch (TableDoesNotExistException $e){
+			if(isset($_GET["step"])){
+				return $this->setup();
+			}
+			
 			#return "<p>Diese supportBox wurde noch nicht eingerichtet!</p>";
 			return "<img src=\"/specifics/logo.svg\" style=\"width:6em;position:fixed;bottom:1em;right:1em;\">
 				<div style=\"margin-top:30vh;\">
@@ -47,8 +51,8 @@ class CCSBControl extends CCPage implements iCustomContent {
 						<img style=\"float:left;margin-right:2em;width:7em;\" src=\"/supportBox/SBControl/bigLoader.png\">
 						<p style=\"font-size:2em;display:inline-block;width:calc(100% - 9em);padding:0;\">Bitte haben Sie etwas Geduld, während Ihre supportBox eingerichtet wird…</p>
 					</div>
-				</div>";
-			#return $this->setup();
+				</div>".OnEvent::script("document.location.href='/ubiquitous/CustomerPage/?D=supportBox/SBControl&cloud=$_GET[cloud]&mail=$_GET[mail]&step=2';");
+			
 		}
 		
 		$cloud = mUserdata::getGlobalSettingValue("SBCloud");
