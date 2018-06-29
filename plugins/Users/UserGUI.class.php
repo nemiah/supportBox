@@ -67,6 +67,13 @@ class UserGUI extends User implements iGUIHTML2 {
 			"UserSkype",
 			"UserTel"));
 		
+		if(Applications::activeApplication() == "supportBox"){
+			$gui->attributes(array(
+				"name",
+				"username",
+				"password",
+				"SHApassword"));
+		}
 		
 		$gui->label("name","Name");
 		$gui->label("username","Benutzername");

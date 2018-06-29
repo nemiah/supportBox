@@ -19,6 +19,13 @@
  */
 class UsersGUI extends Users implements iGUIHTML2{
 	public function getHTML($id){
+		if(Applications::activeApplication() == "supportBox"){
+			$U = anyC::getFirst("User");
+			$UG = new UserGUI($U->getID());
+			
+			return $UG->getHTML($U->getID());
+		}
+		
 		$allowedUsers = Environment::getS("allowedUsers", null);
 		
 		#$this->addAssocV3("UserType", "=", "0");
