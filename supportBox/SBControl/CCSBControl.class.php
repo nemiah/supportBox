@@ -85,14 +85,21 @@ class CCSBControl extends CCPage implements iCustomContent {
 		$this->loadPlugin("plugins", "Installation");
 		$this->loadPlugin("supportBox", "SBInfo");
 		
-		print_r($_GET);
+		#print_r($_GET);
 		$I = new mInstallation();
-		$return = $I->setupAllTables(true);
+		#$return = 
+		$I->setupAllTables(true);
 		#print_r($return);
 		echo "<p class=\"confirm\">Die Datenbank wurde eingerichtet.</p>";
 		
 		$SBI = new mSBInfoGUI();
 		$SBI->cloudSave($_GET["cloud"], $_GET["mail"]);
+		
+		echo "<p style=\"font-weight:20px;\">
+			Setup beendet!<br>
+			Sie können sich jetzt mit<br>
+			dem Benutzer 'Admin' und dem Passwort 'Admin' an der supportBox anmelden!<br>
+			<a href=\"/\">Weiter</a></p>";
 	}
 	
 	public function setMode($data){
