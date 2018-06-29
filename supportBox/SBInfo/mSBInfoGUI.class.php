@@ -21,6 +21,18 @@
 class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 	
 	public function getHTML($id, $page){
+		try {
+			$cloud = mUserdata::getGlobalSettingValue("SBCloud", "");
+		} catch (TableDoesNotExistException $e){
+			
+			return "
+			<script type=\"text/javascript\">
+				$('contentLeft').update('');
+				Popup.closeNonPersistent();
+				contentManager.loadFrame('contentRight', 'mInstallation', -1, 0, 'mInstallationGUI;-');
+				Menu.setHighLight($('mInstallationMenuEntry'));
+			</script>";
+		}
 		$T = new HTMLTable(2);
 		$T->setColWidth(1, 140);
 		$T->setTableStyle("table-layout:fixed");
@@ -44,7 +56,7 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 		#$BS->style("float:right;");
 		#$BS->popup("", "Supervisor-Status", "mSBInfo", "-1", "status");
 		
-		if(!mUserdata::getGlobalSettingValue("SBCloud", "")){
+		if(!$cloud){
 			$B = "";
 			$BT = "";
 		}
