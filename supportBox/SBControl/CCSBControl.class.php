@@ -31,12 +31,17 @@ class CCSBControl extends CCPage implements iCustomContent {
 		$this->loadPlugin("supportBox", "SBForward");
 	}
 	
+	function getStyle() {
+		return "";
+	}
+	
 	function getCMSHTML() {
 		$AC = anyC::get("SBForward");
 		try {
 			$AC->lCV3();
 		} catch (TableDoesNotExistException $e){
-			return "<p>Diese supportBox wurde noch nicht eingerichtet!</p>";
+			#return "<p>Diese supportBox wurde noch nicht eingerichtet!</p>";
+			return $this->setup();
 		}
 		
 		$cloud = mUserdata::getGlobalSettingValue("SBCloud");
@@ -84,7 +89,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 		$I = new mInstallation();
 		$return = $I->setupAllTables(true);
 		#print_r($return);
-		echo "<p>Die Datenbank wurde eingerichtet.</p>";
+		echo "<p class=\"confirm\">Die Datenbank wurde eingerichtet.</p>";
 		
 		$SBI = new mSBInfoGUI();
 		$SBI->cloudSave($_GET["cloud"], $_GET["mail"]);
