@@ -41,7 +41,8 @@ class CCSBControl extends CCPage implements iCustomContent {
 			$AC->lCV3();
 		} catch (TableDoesNotExistException $e){
 			#return "<p>Diese supportBox wurde noch nicht eingerichtet!</p>";
-			return $this->setup();
+			return "<img src=\"/supportBox/SBControl/bigLoader.png\"><p>Bitte haben Sie etwas Geduld, während Ihre supportBox eingerichtet wird…</p>";
+			#return $this->setup();
 		}
 		
 		$cloud = mUserdata::getGlobalSettingValue("SBCloud");
