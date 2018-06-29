@@ -77,7 +77,11 @@ class CCSBControl extends CCPage implements iCustomContent {
 	}
 	
 	public function setup(){
+		$this->loadPlugin("plugin", "Installation");
+		
 		print_r($_GET);
+		$I = new mInstallationGUI();
+		$I->updateAllTables(true);
 	}
 	
 	public function setMode($data){
