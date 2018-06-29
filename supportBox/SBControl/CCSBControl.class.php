@@ -82,7 +82,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 		print_r($_GET);
 		$I = new mInstallation();
 		$return = $I->setupAllTables(true);
-		
+		print_r($return);
 		echo "<p>Die Datenbank wurde eingerichtet.</p>";
 	}
 	
