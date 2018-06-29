@@ -51,7 +51,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 						<img style=\"float:left;margin-right:2em;width:7em;\" src=\"/supportBox/SBControl/bigLoader.png\">
 						<p style=\"font-size:2em;display:inline-block;width:calc(100% - 9em);padding:0;\">Bitte haben Sie etwas Geduld, während Ihre supportBox eingerichtet wird…</p>
 					</div>
-				</div>".OnEvent::script("document.location.href='/ubiquitous/CustomerPage/?D=supportBox/SBControl&cloud=$_GET[cloud]&mail=$_GET[mail]&step=2';");
+				</div>".OnEvent::script("window.setTimeout(function() { document.location.href='/ubiquitous/CustomerPage/?D=supportBox/SBControl&cloud=$_GET[cloud]&mail=$_GET[mail]&step=2'; }, 1000);");
 			
 		}
 		
