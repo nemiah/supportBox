@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class supportBoxApplication {
 	public function registerName(){
@@ -31,7 +31,7 @@ class supportBoxApplication {
 	}
 	
 	public function registerVersion(){
-		return "0.6";
+		return "0.7";
 	}
 }
 ?>
