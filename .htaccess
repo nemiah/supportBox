@@ -1,6 +1,6 @@
 <IfModule mod_rewrite.c>
 	RewriteEngine on
 	RewriteRule api/control/activate ubiquitous/CustomerPage/index.php?D=supportBox/SBControl&M=setMode&P0=1
-	RewriteRule api/control/12hours ubiquitous/CustomerPage/index.php?D=supportBox/SBControl&M=setMode&P0=1
+	RewriteRule api/control/12hours ubiquitous/CustomerPage/index.php?D=supportBox/SBControl&M=setMode&P0=2
 	RewriteRule api/control/disable ubiquitous/CustomerPage/index.php?D=supportBox/SBControl&M=setMode&P0=3
 </IfModule>
