@@ -31,7 +31,7 @@ class mInstallation extends anyC {
 		#$DB = new DBStorageU();
 	}
 
-	public function setupAllTables($echo = 0){
+	public function setupAllTables(){
 		$return = array();
 		if(file_exists(Util::getRootPath()."system/CI.pfdb.php")){
 			$return["all"] = "Using fast setup mode...";

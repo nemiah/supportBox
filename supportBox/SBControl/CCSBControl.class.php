@@ -80,8 +80,10 @@ class CCSBControl extends CCPage implements iCustomContent {
 		$this->loadPlugin("plugins", "Installation");
 		
 		print_r($_GET);
-		$I = new mInstallationGUI();
-		$I->setupAllTables(true);
+		$I = new mInstallation();
+		$return = $I->setupAllTables(true);
+		
+		echo "<p>Die Datenbank wurde eingerichtet.</p>";
 	}
 	
 	public function setMode($data){
