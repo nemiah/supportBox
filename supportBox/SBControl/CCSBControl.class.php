@@ -95,7 +95,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 		$SBI = new mSBInfoGUI();
 		$SBI->cloudSave($_GET["cloud"], $_GET["mail"]);
 		
-		echo "<p style=\"font-weight:20px;\">
+		echo "<p style=\"font-size:20px;\">
 			Setup beendet!<br>
 			Sie können sich jetzt mit<br>
 			dem Benutzer 'Admin' und dem Passwort 'Admin' an der supportBox anmelden!<br>
