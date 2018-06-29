@@ -77,7 +77,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 	}
 	
 	public function setup(){
-		$this->loadPlugin("plugin", "Installation");
+		$this->loadPlugin("plugins", "Installation");
 		
 		print_r($_GET);
 		$I = new mInstallationGUI();
