@@ -76,6 +76,10 @@ class CCSBControl extends CCPage implements iCustomContent {
 
 	}
 	
+	public function setup(){
+		print_r($_GET);
+	}
+	
 	public function setMode($data){
 		if($data["P0"] == 1){
 			mUserdata::setUserdataS("supportBoxNewConnection", -1, "", -1);
