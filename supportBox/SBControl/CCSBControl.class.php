@@ -44,8 +44,8 @@ class CCSBControl extends CCPage implements iCustomContent {
 			return "<img src=\"/specifics/logo.svg\" style=\"width:6em;position:fixed;bottom:1em;right:1em;\">
 				<div style=\"margin-top:30vh;\">
 					<div style=\"width:50%;margin:auto;\">
-						<img style=\"float:left;margin-right:2em;\" src=\"/supportBox/SBControl/bigLoader.png\">
-						<p style=\"font-size:2em;display:inline-block;\">Bitte haben Sie etwas Geduld, während Ihre supportBox eingerichtet wird…</p>
+						<img style=\"float:left;margin-right:2em;width:7em;\" src=\"/supportBox/SBControl/bigLoader.png\">
+						<p style=\"font-size:2em;display:inline-block;width:calc(100%-9em);\">Bitte haben Sie etwas Geduld, während Ihre supportBox eingerichtet wird…</p>
 					</div>
 				</div>";
 			#return $this->setup();
