@@ -584,13 +584,21 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 		
 		$message = "<p style=\"padding:10px;font-size:20px;color:green;margin-bottom:40px;text-align:center;\">Ihre Datenbank wurde erfolgreich eingerichtet.</p>";
 		
-		$action = "contentManager.loadPlugin('contentRight', 'Users'); contentManager.newClassButton('User',  function(transport){ }, 'contentLeft', 'UserGUI;edit:ok');";
-		
-		$B = new Button("Benutzer anlegen", "./plugins/Installation/benutzer.png", "icon");
-		$B->onclick($action);
-		
-		$html = $this->box($B, $action, "Einen Benutzer<br />anlegen");
-		
+		if(Applications::activeApplication() == "supportBox"){
+			$action = "contentManager.loadPlugin('contentRight', 'mSBInfo');";
+
+			$B = new Button("Benutzer anlegen", "./plugins/Installation/benutzer.png", "icon");
+			$B->onclick($action);
+
+			$html = $this->box($B, $action, "Die supportBox<br>konfigurieren");
+		} else {
+			$action = "contentManager.loadPlugin('contentRight', 'Users'); contentManager.newClassButton('User',  function(transport){ }, 'contentLeft', 'UserGUI;edit:ok');";
+
+			$B = new Button("Benutzer anlegen", "./plugins/Installation/benutzer.png", "icon");
+			$B->onclick($action);
+
+			$html = $this->box($B, $action, "Einen Benutzer<br>anlegen");
+		}
 		
 		echo "$message<div style=\"width:350px;margin:auto;padding-bottom:40px;\">".$html."</div>".OnEvent::script("\$j('.installHiddenTab').fadeIn();");
 	}
