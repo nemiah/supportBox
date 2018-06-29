@@ -96,10 +96,11 @@ class CCSBControl extends CCPage implements iCustomContent {
 		$SBI->cloudSave($_GET["cloud"], $_GET["mail"]);
 		
 		echo "<p style=\"font-size:20px;\">
-			Setup beendet!<br>
-			Sie können sich jetzt mit<br>
-			dem Benutzer 'Admin' und dem Passwort 'Admin' an der supportBox anmelden!<br>
-			<a href=\"/\">Weiter</a></p>";
+			Setup beendet!</p>
+			<p style=\"font-size:20px;\">Sie können sich jetzt mit folgenden Daten an der supportBox anmelden:</p>
+			<p style=\"font-size:20px;\">Benutzer 'Admin'</p>
+			<p style=\"font-size:20px;\">Passwort 'Admin'<br>
+			<p style=\"font-size:20px;\"><a href=\"/\">Weiter</a></p>";
 	}
 	
 	public function setMode($data){
