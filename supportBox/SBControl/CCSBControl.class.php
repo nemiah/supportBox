@@ -42,9 +42,11 @@ class CCSBControl extends CCPage implements iCustomContent {
 		} catch (TableDoesNotExistException $e){
 			#return "<p>Diese supportBox wurde noch nicht eingerichtet!</p>";
 			return "
-				<div style=\"margin-top:40vh;\">
-					<img src=\"/supportBox/SBControl/bigLoader.png\">
-					<p>Bitte haben Sie etwas Geduld, während Ihre supportBox eingerichtet wird…</p>
+				<div style=\"margin-top:30vh;\">
+					<div style=\"width:50%;margin:auto;\">
+						<img style=\"float:left;margin-right:2em;\" src=\"/supportBox/SBControl/bigLoader.png\">
+						<p style=\"font-size:2em;\">Bitte haben Sie etwas Geduld, während Ihre supportBox eingerichtet wird…</p>
+					</div>
 				</div>";
 			#return $this->setup();
 		}
