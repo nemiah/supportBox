@@ -41,7 +41,7 @@ class CCSBControl extends CCPage implements iCustomContent {
 			$AC->lCV3();
 		} catch (TableDoesNotExistException $e){
 			#return "<p>Diese supportBox wurde noch nicht eingerichtet!</p>";
-			return "<img src=\"/specifics/logo.svg\" style=\"width:3em;position:fixed;bottom:1em;right:1em;\">
+			return "<img src=\"/specifics/logo.svg\" style=\"width:5em;position:fixed;bottom:1em;right:1em;\">
 				<div style=\"margin-top:30vh;\">
 					<div style=\"width:50%;margin:auto;\">
 						<img style=\"float:left;margin-right:2em;\" src=\"/supportBox/SBControl/bigLoader.png\">
