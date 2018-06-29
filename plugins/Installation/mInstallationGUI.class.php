@@ -587,7 +587,7 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 		if(Applications::activeApplication() == "supportBox"){
 			$action = "contentManager.loadPlugin('contentRight', 'mSBInfo');";
 
-			$B = new Button("Dus supportBox konfigurieren", "./plugins/Installation/benutzer.png", "icon");
+			$B = new Button("Die supportBox konfigurieren", "./plugins/Installation/benutzer.png", "icon");
 			$B->onclick($action);
 
 			$html = $this->box($B, $action, "Die supportBox<br>konfigurieren");
