@@ -1,5 +1,5 @@
 # !/bin/bash
-sudo a2enmod rewrite
+a2enmod rewrite
 
 echo '<VirtualHost *:80>
         ServerAdmin webmaster@localhost
@@ -9,6 +9,6 @@ echo '<VirtualHost *:80>
         <Directory "/var/www/html">
                 AllowOverride All
         </Directory>
-</VirtualHost>' | sudo tee /etc/apache2/sites-enabled/000-default.conf > /dev/null
+</VirtualHost>' | tee /etc/apache2/sites-enabled/000-default.conf > /dev/null
 
-sudo service apache2 restart
+service apache2 restart
