@@ -33,6 +33,10 @@ class SBUtil {
 		return rand(10000, 99999);
 	}
 	
+	public static function localIP(){
+		return exec("ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'");
+	}
+	
 	public static function sayHo($session){
 		$session->publish('it.furtmeier.supportbox.pisays', [SBUtil::message("ho")], [], ["acknowledge" => true]);
 		SBUtil::log("Saying 'ho' to server");

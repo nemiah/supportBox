@@ -34,7 +34,7 @@ if($cloud == null){
 
 			switch($call->m){
 				case "knockknock":
-					$localIP = getHostByName(getHostName());
+					$localIP = SBUtil::localIP();
 					SBUtil::sayImHere($session, "hiimnew", $localIP);
 				break;
 			}

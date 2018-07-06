@@ -38,7 +38,7 @@ class OnAction {
 		if(!self::allowed($C))
 			return SBUtil::error("Aktuell sind keine neuen Verbindungen erlaubt.");
 		
-		$localIP = getHostByName(getHostName());
+		$localIP = SBUtil::localIP();
 		if(SBUtil::serial() != "00000000demodemo" AND ($R->SBForwardIP == $localIP OR trim($R->SBForwardIP) == "localhost" OR substr(trim($R->SBForwardIP), 0, 4) == "127.")){
 			$C->close();
 			return SBUtil::error("Diese Verbindung ist unzulässig!");
@@ -137,10 +137,9 @@ class OnAction {
 	
 	public static function getInfo(){
 		$uptime = shell_exec("uptime");
-		$localIP = getHostByName(getHostName());
 		
 		$info = new stdClass();
-		$info->ip = $localIP;
+		$info->ip = SBUtil::localIP();
 		$info->uptime = trim($uptime);
 		
 		return $info;
