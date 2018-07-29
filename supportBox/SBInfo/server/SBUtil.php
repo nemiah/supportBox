@@ -157,7 +157,7 @@ class SBUtil {
 	}
 	
 	public static function serverPort(){
-		return 4444;
+		return 443;
 	}
 	
 	public static function cloud($C){
