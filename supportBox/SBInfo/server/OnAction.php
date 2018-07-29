@@ -46,7 +46,7 @@ class OnAction {
 		
 		SBUtil::log("Connecting $args[1]:$R->SBForwardIP:$R->SBForwardPort ($args[0])");
 		
-		$command = "ssh -o StrictHostKeyChecking=no -R$args[1]:$R->SBForwardIP:$R->SBForwardPort -N pipi@$args[2]";
+		$command = "ssh -p80 -o StrictHostKeyChecking=no -R$args[1]:$R->SBForwardIP:$R->SBForwardPort -N pipi@$args[2]";
 		exec(sprintf("%s > %s 2>&1 & echo $! > %s", $command, "/dev/null", "/home/pi/pids/ssh_".$args[0]));
 		
 		usleep(500000);
