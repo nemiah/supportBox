@@ -104,12 +104,12 @@ class OnAction {
 		
 		$Q = $C->query("SELECT * FROM SBForward");
 		$connections = array();
-		/*while($R = $Q->fetch_object()){
+		while($R = $Q->fetch_object()){
 			$R->SBForwardConnected = 0;
 			$R->SBForwardTimeout = 0;
 			$R->SBForwardAllowed = $allowed;
 			
-			$pfile = "/home/pi/pids/ssh_".$R->SBForwardID;
+			/*$pfile = "/home/pi/pids/ssh_".$R->SBForwardID;
 			if(file_exists($pfile) AND SBUtil::isConnected(file_get_contents($pfile))){
 				$R->SBForwardConnected = 1;
 				$R->SBForwardTimeout = strtotime(preg_replace("/^job [0-9]+ at /", "", file_get_contents("/home/pi/pids/at_".$R->SBForwardID)));
@@ -120,10 +120,10 @@ class OnAction {
 			if($handle){
 				$R->SBForwardAvailable = true;
 				fclose($handle);
-			}
+			}*/
 			
 			$connections[] = $R;
-		}*/
+		}
 		
 		SBUtil::log("Sending connections list to server (".count($connections)." entr".(count($connections) == 1 ? "y" : "ies").")");
 		
