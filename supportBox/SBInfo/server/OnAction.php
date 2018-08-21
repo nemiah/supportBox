@@ -109,18 +109,18 @@ class OnAction {
 			$R->SBForwardTimeout = 0;
 			$R->SBForwardAllowed = $allowed;
 			
-			/*$pfile = "/home/pi/pids/ssh_".$R->SBForwardID;
+			$pfile = "/home/pi/pids/ssh_".$R->SBForwardID;
 			if(file_exists($pfile) AND SBUtil::isConnected(file_get_contents($pfile))){
 				$R->SBForwardConnected = 1;
 				$R->SBForwardTimeout = strtotime(preg_replace("/^job [0-9]+ at /", "", file_get_contents("/home/pi/pids/at_".$R->SBForwardID)));
 			}
 			$R->SBForwardAvailable = false;
-			$handle = @fsockopen($R->SBForwardIP, $R->SBForwardPort, $errno, $errstr, 2); 
+			#$handle = @fsockopen($R->SBForwardIP, $R->SBForwardPort, $errno, $errstr, 1); 
 
-			if($handle){
-				$R->SBForwardAvailable = true;
-				fclose($handle);
-			}*/
+			#if($handle){
+			#	$R->SBForwardAvailable = true;
+				#fclose($handle);
+			#}
 			
 			$connections[] = $R;
 		}
