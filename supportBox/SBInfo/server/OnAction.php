@@ -126,6 +126,7 @@ class OnAction {
 		}
 		
 		SBUtil::log("Sending connections list to server (".count($connections)." entr".(count($connections) == 1 ? "y" : "ies").")");
+		SBUtil::log(print_r($connections, true));
 		
 		$add = array();
 		$add["allowedUntil"] = self::allowedUntil($C);
