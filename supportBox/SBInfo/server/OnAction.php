@@ -98,15 +98,13 @@ class OnAction {
     }
 	
 	public static function getConnections() {
-		return SBUtil::ok("", OnAction::getInfo());
-		
 		$C = SBUtil::dbConnection();
 		
 		$allowed = self::allowed($C);
 		
 		$Q = $C->query("SELECT * FROM SBForward");
 		$connections = array();
-		while($R = $Q->fetch_object()){
+		/*while($R = $Q->fetch_object()){
 			$R->SBForwardConnected = 0;
 			$R->SBForwardTimeout = 0;
 			$R->SBForwardAllowed = $allowed;
@@ -125,7 +123,7 @@ class OnAction {
 			}
 			
 			$connections[] = $R;
-		}
+		}*/
 		
 		SBUtil::log("Sending connections list to server (".count($connections)." entr".(count($connections) == 1 ? "y" : "ies").")");
 		
