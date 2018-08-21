@@ -98,6 +98,14 @@ class OnAction {
     }
 	
 	public static function getConnections() {
+		$uptime = shell_exec("uptime");
+		
+		$info = new stdClass();
+		$info->ip = SBUtil::localIP();
+		$info->uptime = trim($uptime);
+		
+		return $info;
+		
 		$C = SBUtil::dbConnection();
 		
 		$allowed = self::allowed($C);
