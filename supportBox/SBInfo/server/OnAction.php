@@ -115,12 +115,12 @@ class OnAction {
 				$R->SBForwardTimeout = strtotime(preg_replace("/^job [0-9]+ at /", "", file_get_contents("/home/pi/pids/at_".$R->SBForwardID)));
 			}
 			$R->SBForwardAvailable = false;
-			#$handle = @fsockopen($R->SBForwardIP, $R->SBForwardPort, $errno, $errstr, 1); 
+			$handle = @fsockopen($R->SBForwardIP, $R->SBForwardPort, $errno, $errstr, 1); 
 
-			#if($handle){
-			#	$R->SBForwardAvailable = true;
-				#fclose($handle);
-			#}
+			if($handle){
+				$R->SBForwardAvailable = true;
+				fclose($handle);
+			}
 			
 			$connections[] = $R;
 		}
