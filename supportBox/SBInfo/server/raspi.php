@@ -111,8 +111,8 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
 	});
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".getConnections", function(){
-		SBUtil::log(print_r(OnAction::getConnections(), true));
-		return OnAction::getConnections();
+		return SBUtil::ok("", OnAction::getInfo());
+		#return OnAction::getConnections();
 	});
 	
 	$session->register('it.furtmeier.supportbox.'.$serial.".doUpdate", function(){
