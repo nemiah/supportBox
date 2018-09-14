@@ -51,7 +51,7 @@ class OnAction {
 		
 		usleep(500000);
 		if(!SBUtil::isConnected(file_get_contents("/home/pi/pids/ssh_".$args[0]))){
-			SBUtil::log("No Connection established, trying again!");
+			SBUtil::log("No Connection established ($command), trying again!");
 			
 			unlink("/home/pi/pids/ssh_".$args[0]);
 			
