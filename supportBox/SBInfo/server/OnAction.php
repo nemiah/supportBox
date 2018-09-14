@@ -51,15 +51,19 @@ class OnAction {
 		
 		usleep(500000);
 		if(!SBUtil::isConnected(file_get_contents("/home/pi/pids/ssh_".$args[0]))){
+			SBUtil::log("No Connection established, trying again!");
+			
 			unlink("/home/pi/pids/ssh_".$args[0]);
 			
 			$command = "ssh -p222 -o StrictHostKeyChecking=no -R$args[1]:$R->SBForwardIP:$R->SBForwardPort -N pipi@$args[2]";
 			exec(sprintf("%s > %s 2>&1 & echo $! > %s", $command, "/dev/null", "/home/pi/pids/ssh_".$args[0]));
 			
 			usleep(500000);
-			if(!SBUtil::isConnected(file_get_contents("/home/pi/pids/ssh_".$args[0])))
+			if(!SBUtil::isConnected(file_get_contents("/home/pi/pids/ssh_".$args[0]))){
+				SBUtil::log("Connection failed!");
+				
 				unlink("/home/pi/pids/ssh_".$args[0]);
-			
+			}
 		}
 		
 		if(file_exists("/home/pi/pids/ssh_".$args[0])){
