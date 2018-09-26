@@ -61,7 +61,7 @@ stdout_logfile_maxbytes = 2MB";
 	}
 	
 	public function newMe($checkUserData = true, $output = false) {
-		$id = parent::newMe($checkUserData, $output);
+		$id = parent::newMe($checkUserData, false);
 		
 		$this->updateConfig($id);
 		
