@@ -38,6 +38,7 @@ class SBTunnelGUI extends SBTunnel implements iGUIHTML2 {
 		
 		$gui->label("SBTunnelServerPort", "Server-Port");
 		$gui->type("SBTunnelServerPort", "select", $ports);
+		$gui->type("SBTunnelAktiv", "checkbox");
 		
 		return $gui->getEditHTML();
 	}

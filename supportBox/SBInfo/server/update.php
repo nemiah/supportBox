@@ -37,5 +37,6 @@ $C->query("ALTER TABLE `SBTunnel`
 $C->query("ALTER TABLE `SBTunnel`
   MODIFY `SBTunnelID` int(10) NOT NULL AUTO_INCREMENT;");
 
+$C->query("ALTER TABLE `SBTunnel` ADD `SBTunnelAktiv` TINYINT(1) NOT NULL AFTER `SBTunnelName`;");
 
 echo "Done!";

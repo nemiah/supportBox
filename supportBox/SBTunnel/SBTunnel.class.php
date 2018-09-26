@@ -18,5 +18,47 @@
  *  2007 - 2017, Furtmeier Hard- und Software - Support@Furtmeier.IT
  */
 class SBTunnel extends PersistentObject {
+	private function updateConfig($id){
+		$filename = "/etc/supervisor/conf.d/autossh".$id."conf";
+		exec("/bin/rm $filename");
+		
+		if(!$this->A("SBTunnelAktiv"))
+			return;
+		
+		$cloudID = mUserdata::getGlobalSettingValue("SBCloud", null);
+		$content = "[program:autoSSH]
+command                 = autossh -p80 -M0 -N -o \"ExitOnForwardFailure yes\" -o \"ServerAliveInterval 15\" -o \"ServerAliveCountMax 4\" -o \"ControlPath none\" -o \"StrictHostKeyChecking no\" -R".$this->A("SBTunnelServerPort").":".$this->A("SBTunnelIP").":".$this->A("SBTunnelPort")." $cloudID@static01.supportbox.io
+process_name            = ".$this->A("SBTunnelServerPort")."
+numprocs                = 1
+autostart               = true
+autorestart             = true
+user                    = pi
+redirect_stderr         = true
+stdout_logfile          = /var/log/supervisor/autoSSH.log
+stdout_logfile_maxbytes = 2MB";
+		
+		exec("echo \"$content\" | sudo tee $filename > /dev/null");
+	}
+	
+	public function saveMe($checkUserData = true, $output = false) {
+		$this->updateConfig($this->getID());
+		
+		return parent::saveMe($checkUserData, $output);
+	}
+	
+	public function deleteMe() {
+		$this->changeA("SBTunnelAktiv", "0");
+		$this->updateConfig($this->getID());
+		
+		return parent::deleteMe();
+	}
+	
+	public function newMe($checkUserData = true, $output = false) {
+		$id = parent::newMe($checkUserData, $output);
+		
+		$this->updateConfig($id);
+		
+		return $id;
+	}
 }
 ?>

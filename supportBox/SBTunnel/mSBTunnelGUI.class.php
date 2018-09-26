@@ -28,8 +28,9 @@ class mSBTunnelGUI extends anyC implements iGUIHTMLMP2 {
 		$gui->screenHeight();
 
 		$gui->name("Tunnel");
-		
-		$gui->attributes(array("SBTunnelName", "SBTunnelIP", "SBTunnelPort"));
+		$gui->colWidth("SBTunnelAktiv", "20");
+		$gui->parser("SBTunnelAktiv", "Util::catchParser");
+		$gui->attributes(array("SBTunnelAktiv", "SBTunnelName", "SBTunnelIP", "SBTunnelPort"));
 		
 		return $gui->getBrowserHTML($id);
 	}
