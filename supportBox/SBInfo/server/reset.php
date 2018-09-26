@@ -33,6 +33,8 @@ echo "Entferne Keys\n";
 exec("sudo -u pi rm /home/pi/.ssh/id_rsa");
 exec("sudo -u pi rm /home/pi/.ssh/id_rsa.pub");
 
+exec("sudo rm /etc/supervisor/conf.d/autossh*.conf");
+
 echo "Setze Postfix relayhost zurück\n";
 exec("echo \"\" | sudo tee /etc/postfix/sasl_passwd  > /dev/null");
 exec("sudo postmap /etc/postfix/sasl_passwd");
@@ -47,6 +49,7 @@ echo "Setze Passwort von Benutzer 'pi' auf 'pi'\n";
 shell_exec('echo "pi:pi" | sudo /usr/sbin/chpasswd');
 
 echo "Starte Dienste neu…\n";
+exec("sudo /usr/bin/supervisorctl reload");
 exec("sudo /usr/bin/supervisorctl restart all");
 
 echo "Zurücksetzen abgeschlossen!\n";
