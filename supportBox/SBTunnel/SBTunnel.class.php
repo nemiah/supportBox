@@ -38,6 +38,8 @@ stdout_logfile          = /var/log/supervisor/autoSSH.log
 stdout_logfile_maxbytes = 2MB";
 		
 		exec("echo \"$content\" | sudo tee $filename > /dev/null");
+		exec("sudo /usr/bin/supervisorctl reload");
+		exec("sudo /usr/bin/supervisorctl restart all");
 	}
 	
 	public function saveMe($checkUserData = true, $output = false) {
