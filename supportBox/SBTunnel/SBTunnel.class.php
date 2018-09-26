@@ -22,8 +22,12 @@ class SBTunnel extends PersistentObject {
 		$filename = "/etc/supervisor/conf.d/autossh".$id.".conf";
 		exec("/bin/rm $filename");
 		
-		if(!$this->A("SBTunnelAktiv"))
+		if(!$this->A("SBTunnelAktiv")){
+			exec("sudo /usr/bin/supervisorctl reload");
+			exec("sudo /usr/bin/supervisorctl restart all");
+		
 			return;
+		}
 		
 		$cloudID = mUserdata::getGlobalSettingValue("SBCloud", null);
 		$content = "[program:autoSSH]
