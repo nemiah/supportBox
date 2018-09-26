@@ -23,4 +23,19 @@ $C->query("ALTER TABLE `SBNetwork`
 
 exec("echo \"". file_get_contents(__DIR__."/visudo")."\" | sudo tee /etc/sudoers.d/020_supportbox > /dev/null");
 
+
+
+$C->query("CREATE TABLE `SBTunnel` (
+  `SBTunnelID` int(10) NOT NULL,
+  `SBTunnelName` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `SBTunnelServerPort` int(10) NOT NULL,
+  `SBTunnelIP` varchar(40) COLLATE utf8_unicode_ci NOT NULL,
+  `SBTunnelPort` int(10) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;");
+$C->query("ALTER TABLE `SBTunnel`
+  ADD PRIMARY KEY (`SBTunnelID`);");
+$C->query("ALTER TABLE `SBTunnel`
+  MODIFY `SBTunnelID` int(10) NOT NULL AUTO_INCREMENT;");
+
+
 echo "Done!";
