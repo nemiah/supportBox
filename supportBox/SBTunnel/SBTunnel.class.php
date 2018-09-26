@@ -20,6 +20,7 @@
 class SBTunnel extends PersistentObject {
 	private function updateConfig($id){
 		$filename = "/etc/supervisor/conf.d/autossh".$id.".conf";
+		exec("echo \"\" | sudo tee $filename > /dev/null");
 		exec("sudo /bin/rm $filename");
 		
 		if(!$this->A("SBTunnelAktiv")){
