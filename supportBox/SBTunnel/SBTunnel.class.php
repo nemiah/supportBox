@@ -39,7 +39,7 @@ autostart               = true
 autorestart             = true
 user                    = pi
 redirect_stderr         = true
-stdout_logfile          = /var/log/supervisor/autoSSH.log
+stdout_logfile          = /var/log/supervisor/autoSSH$id.log
 stdout_logfile_maxbytes = 2MB";
 		
 		exec("echo \"$content\" | sudo tee $filename > /dev/null");
