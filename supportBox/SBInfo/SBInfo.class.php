@@ -43,8 +43,18 @@ class SBInfo extends UnpersistentClass {
 	
 	public static function status($echo = false){
 		exec("sudo /usr/bin/supervisorctl status", $output);
-		print_r($output);
-		preg_match("/box[ ]+([A-Z]+)[ ]+pid/", $output[0], $matches);
+		print_r($output);#
+		$status = "";
+		foreach($output AS $k => $v){
+			if(preg_match("/autoSSH:[0-9]+[ ]+([A-Z]+)[ ]+pid/", $output[0], $matches)){
+				$status .= "$matches[1]";
+			}
+			
+			if(preg_match("/box[ ]+([A-Z]+)[ ]+pid/", $output[0], $matches)){
+				$status .= "$matches[1]";
+			}
+			
+		}
 		
 		if($echo)
 			echo $matches[1];
