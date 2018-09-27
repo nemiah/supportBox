@@ -46,12 +46,12 @@ class SBInfo extends UnpersistentClass {
 		print_r($output);#
 		$status = "";
 		foreach($output AS $k => $v){
-			if(preg_match("/autoSSH:[0-9]+[ ]+([A-Z]+)[ ]+pid/", $output[0], $matches)){
-				$status .= "$matches[1]<br>";
+			if(preg_match("/autoSSH:([0-9]+)[ ]+([A-Z]+)[ ]+pid/", $output[0], $matches)){
+				$status .= "Tunnel $matches[1]: $matches[2]<br>";
 			}
 			
 			if(preg_match("/box[ ]+([A-Z]+)[ ]+pid/", $output[0], $matches)){
-				$status .= "$matches[1]<br>";
+				$status .= "Server $matches[1]<br>";
 			}
 			
 		}
