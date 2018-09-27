@@ -51,7 +51,7 @@ class SBInfo extends UnpersistentClass {
 			}
 			
 			if(preg_match("/box[ ]+([A-Z]+)[ ]+pid/", $v, $matches)){
-				$status .= "Server $matches[1]<br>";
+				$status .= "Client: $matches[1]<br>";
 			}
 			
 		}
