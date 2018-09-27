@@ -47,19 +47,19 @@ class SBInfo extends UnpersistentClass {
 		$status = "";
 		foreach($output AS $k => $v){
 			if(preg_match("/autoSSH:[0-9]+[ ]+([A-Z]+)[ ]+pid/", $output[0], $matches)){
-				$status .= "$matches[1]";
+				$status .= "$matches[1]<br>";
 			}
 			
 			if(preg_match("/box[ ]+([A-Z]+)[ ]+pid/", $output[0], $matches)){
-				$status .= "$matches[1]";
+				$status .= "$matches[1]<br>";
 			}
 			
 		}
 		
 		if($echo)
-			echo $matches[1];
+			echo $status;
 		
-		return $matches[1];
+		return $status;
 		#supportBox:supportbox            RUNNING   pid 12988, uptime 1:51:01
 	}
 	
