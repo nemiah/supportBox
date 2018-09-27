@@ -64,7 +64,7 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 		$result = exec("sudo -u pi ssh-keygen -lf /home/pi/.ssh/id_rsa.pub");
 		$content = explode(' ', $result);
 		
-		$T->addLV("Seriennummer:", SBInfo::serial());
+		$T->addLV("Seriennummer:", ltrim(SBInfo::serial(), "0"));
 		$T->addLV("supportBox Version:", Applications::i()->getRunningVersion());
 		$T->addLV("Cloud:", $B.mUserdata::getGlobalSettingValue("SBCloud", ""));
 		$T->addLV("E-Mail:", mUserdata::getGlobalSettingValue("SBEMail", ""));
