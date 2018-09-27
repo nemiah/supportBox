@@ -43,6 +43,7 @@ class SBInfo extends UnpersistentClass {
 	
 	public static function status($echo = false){
 		exec("sudo /usr/bin/supervisorctl status", $output);
+		print_r($output);
 		preg_match("/box[ ]+([A-Z]+)[ ]+pid/", $output[0], $matches);
 		
 		if($echo)
