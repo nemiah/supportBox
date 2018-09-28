@@ -31,7 +31,7 @@ class supportBoxApplication {
 	}
 	
 	public function registerVersion(){
-		return "0.7";
+		return "0.8";
 	}
 }
 ?>

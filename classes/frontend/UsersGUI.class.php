@@ -19,7 +19,7 @@
  */
 class UsersGUI extends Users implements iGUIHTML2{
 	public function getHTML($id){
-		if(Applications::activeApplication() == "supportBox"){
+		if(Applications::activeApplication() == "supportBox" AND Session::isPluginLoaded("mSBForward")){
 			$U = anyC::getFirst("User");
 			$UG = new UserGUI($U->getID());
 			

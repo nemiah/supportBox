@@ -127,7 +127,7 @@ class UserGUI extends User implements iGUIHTML2 {
 		
 		if($this->getID() > 20000)
 			$gui->optionsEdit (false, false);
-		
+	
 		return $gui->getEditHTML().(($this->A->isAdmin != 1) ? $html :"");
 	}
 }
