@@ -4,4 +4,4 @@ echo '127.0.0.1	localhost
 ff02::1		ip6-allnodes
 ff02::2		ip6-allrouters
 
-127.0.1.1	supportbox' | tee /etc/apache2/sites-enabled/000-default.conf > /dev/null
+127.0.1.1	supportbox' | tee /etc/hosts > /dev/null
