@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 
 /**
@@ -36,7 +36,7 @@
 define("PHYNX_USE_TEMP_HTACCESS", true);
 define("PHYNX_USE_SVG", true);
 
-if(isset($_SERVER["HTTP_HOST"]) AND $_SERVER["HTTP_HOST"] == "cloud.furtmeier.it"){
+if(isset($_SERVER["HTTP_HOST"]) AND $_SERVER["HTTP_HOST"] == "cloud.open3a.de"){
 	define("PHYNX_USE_SYSLOG", true);
 	openlog('phynx', LOG_CONS | LOG_PID, LOG_USER);
 } else 
@@ -45,11 +45,14 @@ if(isset($_SERVER["HTTP_HOST"]) AND $_SERVER["HTTP_HOST"] == "cloud.furtmeier.it
 header('P3P:CP="IDC DSP COR ADM DEVi TAIi PSA PSD IVAi IVDi CONi HIS OUR IND CNT"');
 require_once dirname(__FILE__)."/basics.php";
 
-if(!defined("PHYNX_MAIN_STORAGE"))
+if(!defined("PHYNX_MAIN_STORAGE")){
 	if(function_exists("mysqli_connect"))
 		define("PHYNX_MAIN_STORAGE","MySQL");
-	else
+	elseif(function_exists("mysql_connect"))
 		define("PHYNX_MAIN_STORAGE","MySQLo");
+	else
+		emoFatalError("Datenbank-Verbindung nicht möglich", "In Ihrer PHP-Installation ist keine Erweiterung (mysqli/mysql) geladen, um eine Verbindung zur Datenbank herzustellen. Bitte wenden Sie sich an den Webspace-Anbieter.", "Sitzungs-Fehler", true);
+}
 
 $GLOBALS["phynxLogPhpErrors"] = true;
 
@@ -66,9 +69,18 @@ if(session_name() == get_cfg_var("session.name"))
 
 spl_autoload_register("phynxAutoloader");
 
-if(ini_get("open_basedir") == "" OR (ini_get("session.save_path") != "" AND strpos(ini_get("open_basedir"), ini_get("session.save_path")) !== false)){
+if(version_compare(PHP_VERSION, '7.3.0', ">="))
+	session_set_cookie_params(array("httponly" => true, "samesite" => "Strict"));
+
+if(
+	ini_get("session.save_handler") == "files" 
+	AND ini_get("open_basedir") == "" 
+	OR (
+		ini_get("session.save_path") != "" 
+		AND strpos(ini_get("open_basedir"), ini_get("session.save_path")) !== false)
+	){
 	if(!is_writable(session_save_path()) AND (!file_exists(dirname(__FILE__)."/session") OR !is_writable(dirname(__FILE__)."/session")))
-		emoFatalError("Sitzungs-Erstellung fehlgeschlagen", "Das Sitzungs-Verzeichnis (".session_save_path().") Ihres Webservers ist leider nicht beschreibbar.<br />Bitte melden Sie dies Ihrem Webhoster.<br /><br />Um das Problem ohne Webhoster zu l&ouml;sen, erstellen Sie das Verzeichnis /system/session<br />im Verzeichnis dieser Anwendung und machen es durch den Webserver beschreibbar (mindestens Modus 755, eventuell ist auch 777 notwendig).<br />Stellen Sie dabei sicher, dass es von Au&szlig;erhalb nicht erreichbar ist (zum Beispiel durch eine .htaccess-Datei).", "Sitzungs-Fehler", true);
+		emoFatalError("Sitzungs-Erstellung fehlgeschlagen", "Das Sitzungs-Verzeichnis (".session_save_path().", ".ini_get("session.save_handler").") Ihres Webservers ist leider nicht beschreibbar.<br />Bitte melden Sie dies Ihrem Webhoster.<br /><br />Um das Problem ohne Webhoster zu l&ouml;sen, erstellen Sie das Verzeichnis /system/session<br />im Verzeichnis dieser Anwendung und machen es durch den Webserver beschreibbar (mindestens Modus 755, eventuell ist auch 777 notwendig).<br />Stellen Sie dabei sicher, dass es von Au&szlig;erhalb nicht erreichbar ist (zum Beispiel durch eine .htaccess-Datei).", "Sitzungs-Fehler", true);
 
 	if(!is_writable(session_save_path()))
 		session_save_path(dirname(__FILE__)."/session");
@@ -80,6 +92,7 @@ if((isset($_POST["class"]) AND isset($_POST["method"]) AND $_POST["class"] == "U
 
 if(!defined("PHYNX_NO_SESSION_RELOCATION")
 	AND ini_get("session.save_path") != ""
+	AND ini_get("session.save_handler") == "files"
 	AND (ini_get("open_basedir") == "" OR strpos(ini_get("open_basedir"), ini_get("session.save_path")) !== false) 
 	AND isset($_COOKIE[ini_get("session.name")]) 
 	AND !file_exists(ini_get("session.save_path")."/sess_".$_COOKIE[ini_get("session.name")])
@@ -194,7 +207,10 @@ function log_error($errno, $errmsg, $filename, $linenum) {
 register_shutdown_function('fatalErrorShutdownHandler');
 function fatalErrorShutdownHandler() {
 	$last_error = error_get_last();
-	if ($last_error['type'] !== E_ERROR) 
+	if($last_error === null)
+		return;
+	
+	if (isset($last_error['type']) AND $last_error['type'] !== E_ERROR) 
 		return;
 	
 	log_error(E_ERROR, $last_error['message'], $last_error['file'], $last_error['line']);
@@ -208,6 +224,8 @@ if(isset($_GET["cloud"]) AND ((isset($_SESSION["phynx_customer"]) AND $_SESSION[
 	session_start();
 }
 
+define("PHYNX_SESSION_DONE", true);
+
 if(!isset($_SESSION["classPaths"])) 
 	$_SESSION["classPaths"] = array();
 
@@ -217,7 +235,9 @@ function phynxAutoloader($class_name) {
 	} catch (ClassNotFoundException $e){
 		$_SESSION["classPaths"] = array();
 		return findClass($class_name);
-	}
+	}# catch (ClassUnrealException $e){
+	#	throw new ClassNotFoundException($e->getClassName());
+	#}
 }
 
 if(!isset($_SESSION["S"]) OR !isset($_SESSION["applications"]) OR !is_object($_SESSION["applications"]) OR $_SESSION["applications"]->numAppsLoaded() == 0){

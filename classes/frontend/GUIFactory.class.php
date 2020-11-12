@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class GUIFactory {
 
@@ -207,7 +207,7 @@ class GUIFactory {
 
 		if($this->tableMode == "CRMSubframeContainer")
 			$icon = "neu.gif";
-
+			
 		$B = $this->getButton("Eintrag erstellen", "./images/i2/$icon");
 		$B->type("icon");
 		$B->id("buttonNewEntry".$this->className);
@@ -254,11 +254,11 @@ class GUIFactory {
 			$pageLinks .= "<a href=\"javascript:".str_replace(array("%TARGET","%PAGE"), array($this->multiPageDetails["target"], $this->multiPageDetails["page"] - 1), $this->functionPagePrevious)."\"><span class=\"iconic arrow_left\" style=\"margin-right:7px;\"></span></a> ";
 		else $pageLinks .= "<span class=\"iconic arrow_left inactive\" style=\"margin-right:7px;\"></span> ";
 
-		if($this->multiPageDetails["page"] != $pages - 1)
+		if($this->multiPageDetails["page"] != $pages - 1 AND $pages > 1)
 			$pageLinks .= "<a href=\"javascript:".str_replace(array("%TARGET","%PAGE"), array($this->multiPageDetails["target"], $this->multiPageDetails["page"] + 1), $this->functionPageNext)."\"><span class=\"iconic arrow_right\" style=\"margin-left:7px;\"></span></a> ";
 		else $pageLinks .= "<span class=\"iconic arrow_right inactive\" style=\"margin-left:7px;\"></span> ";
 
-		if($this->multiPageDetails["page"] != $pages - 1)
+		if($this->multiPageDetails["page"] != $pages - 1 AND $pages > 1)
 			$pageLinks .= "<a href=\"javascript:".str_replace(array("%TARGET","%PAGE"), array($this->multiPageDetails["target"], $pages - 1), $this->functionPageLast)."\"><span class=\"iconic arrow_right\" style=\"border-right-width:2px;\"></span></a> | ";
 		else $pageLinks .= "<span class=\"iconic arrow_right inactive\" style=\"border-right-width:2px;\"></span> | ";
 
@@ -388,7 +388,8 @@ class GUIFactory {
 			$newButton = "";
 			if($this->showNew) {
 				$newButton = $this->getNewButton();
-				$newButton->style("float:right;margin-left:10px;margin-top:-2px;");
+				$newButton->style("margin-left:10px;vertical-align:middle;margin-right:5px;");
+				$newButton = "<a href=\"#\" onclick=\"".$newButton->getAction()." return false;\">".$newButton."Neuer Eintrag</a>";
 			}
 
 			$pageBrowser = $this->getPageBrowser();
@@ -396,11 +397,11 @@ class GUIFactory {
 			return "
 			<div id=\"subFrameContainer$this->collectionName\" style=\"min-height:500px;\">
 				$prepended
-				<div style=\"width:$widths[0]px;\" class=\"backgroundColor1 Tab\">
-					<p>$newButton<span style=\"float:right;font-weight:normal;\">$pageBrowser</span>$caption</p><div style=\"clear:both;\"></div>
+				<div style=\"width:".(strpos($widths[0], "calc(") === false ? $widths[0]."px" : $widths[0]).";\" class=\"backgroundColor1 Tab\">
+					<p><span style=\"float:right;font-weight:normal;\">$pageBrowser $newButton</span>$caption</p><div style=\"clear:both;\"></div>
 				</div>
-				<div id=\"subFrameEdit$this->collectionName\" style=\"display:none;width:$widths[0]px;padding-bottom:15px;\"></div>
-				<div id=\"subFrame$this->collectionName\" style=\"width:$widths[0]px;margin-left:10px;\">
+				<div id=\"subFrameEdit$this->collectionName\" style=\"display:none;width:".(strpos($widths[0], "calc(") === false ? $widths[0]."px" : $widths[0]).";padding-bottom:15px;\"></div>
+				<div id=\"subFrame$this->collectionName\" style=\"width:".(strpos($widths[0], "calc(") === false ? $widths[0]."px" : $widths[0]).";margin-left:10px;\">
 				".Aspect::joinPoint("aboveList", $this, __METHOD__)."
 					<div style=\"\">
 					$Table
@@ -461,7 +462,12 @@ class GUIFactory {
 					break;
 				}
 
-				if($this->showTrash AND $this->classID != -1) $List[] = $this->getDeleteButton();
+				if($this->showTrash AND $this->classID != -1) {
+					if(!isset($this->blacklists[1][$this->classID]))
+						$List[] = $this->getDeleteButton();
+					else
+						$List[] = "";
+				}
 			break;
 		}
 	}
@@ -493,7 +499,12 @@ class GUIFactory {
 					break;
 				}
 
-				if($this->showEdit AND $this->classID != -1) $List[] = $this->getEditButton();
+				if($this->showEdit AND $this->classID != -1) {
+					if(!isset($this->blacklists[0][$this->classID]))
+						$List[] = $this->getEditButton();
+					else
+						$List[] = "";
+				}
 				if($this->showNew AND $this->classID == -1) $List[] = $this->getNewButton();
 			break;
 		}
@@ -550,7 +561,7 @@ class GUIFactory {
 
 	// <editor-fold defaultstate="collapsed" desc="buildFlipPageLine">
 	public function buildFlipPageLine($where = "top"){
-		T::D("");
+		#T::D("");
 		
 		if($this->multiPageDetails["total"] == null) return;
 		if(!$this->showFlipPage) return;
@@ -613,12 +624,12 @@ class GUIFactory {
 			$this->table->addRowClass("backgroundColor0 browserSeparatorTop");
 			$this->table->setRowPart("thead");
 		}
-		T::D("");
+		#T::D("");
 	}
 	// </editor-fold>
 
 	public function buildPageCaption($page){
-		$this->table->addRow(array(T::_("Seite $page")));
+		$this->table->addRow(array(T::_("Seite %1", $page)));
 		$this->table->addRowColspan(1, count($this->referenceLine));
 		$this->table->addCellStyle(1, "text-align:left;padding-top:15px;font-weight:bold;");
 		$this->table->addRowClass("backgroundColor0");
@@ -744,8 +755,8 @@ class GUIFactory {
 		$this->blacklists = array(array_flip($IDs[0]), array_flip($IDs[1]));
 	}
 
-	public function editInPopup($par1 = null){
-		$new = "contentManager.editInPopup('%CLASSNAME', %CLASSID, 'Eintrag bearbeiten', ''".($par1 != null ? ", $par1" : "").");";
+	public function editInPopup($par1 = null, $options = "{}"){
+		$new = "contentManager.editInPopup('%CLASSNAME', %CLASSID, 'Eintrag bearbeiten', ''".($par1 != null ? ", $par1" : "").", $options);";
 		$this->replaceEvent("onNew", $new);
 		$this->replaceEvent("onEdit", $new);
 	}

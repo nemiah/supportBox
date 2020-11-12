@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 
 var lastLoadedLeft        = -1;
@@ -47,7 +47,7 @@ var contentManager = {
 			footerHeight = 0;
 		
 		if(contentManager.layout == "desktop")
-			return $j('#wrapper').height() - $j('#wrapperTable').height() - 20; // 20 px padding on contentLeft and contentRight
+			return $j('#wrapper').height() + parseInt($j('#wrapper').css("padding-bottom")) - /*$j('#wrapperTable').height() -*/ 20; // 20 px padding on contentLeft and contentRight
 		
 		if(contentManager.layout == "vertical")
 			return $j(window).height() - footerHeight - 20; // 20 px padding on contentLeft and contentRight
@@ -55,18 +55,17 @@ var contentManager = {
 		if(contentManager.layout == "fixed")
 			return ($j(window).height() - ($j('#navTabsWrapper').outerHeight() > 60 ? $j('#navTabsWrapper').outerHeight() : 60) - footerHeight - 20);
 		
-		return ($j(window).height() - $j('#navTabsWrapper').outerHeight() - footerHeight - 20);
+		return ($j(window).height() - $j('#navTabsWrapper').outerHeight() - footerHeight - 10);
 	},
 			
 	maxWidth: function(getWindow){
-		if(!getWindow && $j('#desktopWrapper').length > 0)
+		if(!getWindow && contentManager.layout == "desktop")
 			return $j('#wrapper').width();
 		
-		
 		if(contentManager.layout == "vertical")
-			return ($j(window).width() -$j('#navigation').outerWidth() - 1 - $j('#phim:visible').outerWidth());
+			return ($j(window).width() - $j('#navigation').outerWidth() - 1);// - $j('#phim:visible').outerWidth());
 	
-		return ($j(window).width() - $j('#phim:visible').outerWidth());
+		return ($j(window).width());// - $j('#phim:visible').outerWidth());
 	},
 			
 	scrollTable: function(tableID, maxPage){
@@ -107,8 +106,10 @@ var contentManager = {
 
 		$j($targetHeaderTable).find('thead').replaceWith( $j( $targetDataTable ).children('caption, thead').clone().show() );
 
-		var height = contentManager.maxHeight() - $j($targetHeaderTable).outerHeight() - $j("table#foot"+tableID+":visible").outerHeight();
-
+		var height = contentManager.maxHeight() - $j($targetHeaderTable).outerHeight();
+		if($j("table#foot"+tableID+":visible").length)
+			height -= $j("table#foot"+tableID+":visible").outerHeight();
+		
 		$j($targetHeaderTable).closest('.browserContainer').find('.browserContainerSubHeight').each(function(k, v){
 			height -= $j(v).outerHeight();
 		});
@@ -125,10 +126,9 @@ var contentManager = {
 			$j('#contentLeft').append("<div style=\"height:"+contentManager.maxHeight()+"px\"></div>");
 	},
 	
-	init: function(layout){
+	init: function(){
 		Interface.init();
 		Overlay.init();
-		contentManager.layout = layout;
 		
 		Menu.loadMenu();
 		$('contentLeft').update();
@@ -206,15 +206,22 @@ var contentManager = {
 
 	autoLogoutInhibitor: null,
 
-	switchApplication: function(){
+	switchApplication: function(propagate){
+		if(typeof propagate == "undefined")
+			propagate = true;
+		
 		Popup.closeNonPersistent();
 		Popup.closePersistent();
 		Menu.refresh();
 		contentManager.emptyFrame("contentScreen");
+		Interface.setup(function(){ });
 		contentManager.loadDesktop();
 		contentManager.loadJS();
-		contentManager.loadTitle();
+		//contentManager.loadTitle();
 		contentManager.clearHistory();
+		
+		if(propagate && Interface.BroadcastChannel !== null)
+			Interface.BroadcastChannel.postMessage("appSwitch");
 	},
 
 	clearHistory: function(){
@@ -237,6 +244,7 @@ var contentManager = {
 		contentManager.emptyFrame('contentLeft');
 		contentManager.emptyFrame('contentRight');
 		contentManager.loadFrame("contentScreen", "Desktop", 1, 0, "");
+		$j('.theOne').removeClass('theOne');
 	},
 	
 	loadPlugin: function(targetFrame, targetPlugin, bps, withId, options){
@@ -252,9 +260,11 @@ var contentManager = {
 			
 			if(targetFrame == "contentRight"){
 				var historyPlugin = targetPlugin;
+				var oldName = historyPlugin;
+				
 				if(historyPlugin == "Auftraege")
 					historyPlugin = "mAuftrag";
-
+				
 				if(historyPlugin == "Adressen")
 					historyPlugin = "mAdresse";
 
@@ -268,16 +278,17 @@ var contentManager = {
 					historyPlugin = "mObjektL";
 
 				if(contentManager.historyLeft[historyPlugin] && contentManager.historyLeft[historyPlugin][1] != -1){
-					var found = false;
-					if($j('#Browser'+historyPlugin+contentManager.historyLeft[historyPlugin][1]).length)
-						found = true;
+					//console.log("HERE!");
+					//var found = false;
+					//if($j('#Browser'+oldName+contentManager.historyLeft[historyPlugin][1]).length)
+					//	found = true;
 
-					if($j('#BrowserMain'+contentManager.historyLeft[historyPlugin][1]).length)
-						found = true;
-
-					if(found && !Interface.mobile())
+					//if($j('#BrowserMain'+contentManager.historyLeft[historyPlugin][1]).length)
+					//	found = true;
+					//console.log(found);
+					if(!Interface.mobile())
 						contentManager.loadFrame("contentLeft", contentManager.historyLeft[historyPlugin][0], contentManager.historyLeft[historyPlugin][1], 0, "", function(){
-							$j('#Browser'+historyPlugin+contentManager.historyLeft[historyPlugin][1]).addClass("lastSelected");
+							$j('#Browser'+oldName+contentManager.historyLeft[historyPlugin][1]).addClass("lastSelected");
 							$j('#BrowserMain'+contentManager.historyLeft[historyPlugin][1]).addClass("lastSelected");
 						});
 
@@ -332,16 +343,18 @@ var contentManager = {
     	});
 	},
 
-	loadTitle: function(){
+	/*loadTitle: function(){
 		if(!contentManager.updateTitle)
 			return;
 		
 		contentManager.rmePCR("Menu", "-1", "getActiveApplicationName", "",  function(transport){
-			if(!Interface.isDesktop) document.title = transport.responseText;
-			else $("wrapperHandler").update(transport.responseText);
+			if(contentManager.layout != "desktop") 
+				document.title = transport.responseText;
+			else 
+				$("wrapperHandler").update(transport.responseText);
     	});
 		
-	},
+	},*/
 
 	setRoot: function(path){
 		contentManager.rootPath = path;
@@ -476,6 +489,8 @@ var contentManager = {
 
 		if(typeof contentManager.backupFrames[backupName] == "undefined" || contentManager.backupFrames[backupName] == null) {
 			alert("Backup unknown");
+			console.log(backupName);
+			console.log(contentManager.backupFrames);
 			return;
 		}
 		if(contentManager.backupFrames[backupName][0] != -1 || (targetFrame == 'contentRight' && contentManager.backupFrames[backupName][1] != "") || force){
@@ -727,7 +742,7 @@ var contentManager = {
 		}
 		else targetMethodParameters = "'"+targetMethodParameters+"'";
 
-			$j('#'+targetFrame).attr("src", contentManager.getRoot()+'interface/rme.php?class='+targetClass+'&constructor='+targetClassId+'&method='+targetMethod+'&parameters='+targetMethodParameters+((bps != "" && typeof bps != "undefined") ? "&bps="+bps : "")+"&r="+Math.random()+(Ajax.physion != "default" ? "&physion="+Ajax.physion : ""));
+			$j('#'+targetFrame).attr("src", contentManager.getRoot()+'interface/rme.php?class='+targetClass+'&constructor='+encodeURIComponent(targetClassId)+'&method='+targetMethod+'&parameters='+targetMethodParameters+((bps != "" && typeof bps != "undefined") ? "&bps="+bps : "")+"&r="+Math.random()+(Ajax.physion != "default" ? "&physion="+Ajax.physion : ""));
 
 	},
 
@@ -801,7 +816,11 @@ var contentManager = {
 
 		if(mode == "hide")
 			for (var f = 0; f < fields.length; f++) {
-				var fieldS = $j(formID+'select[name='+fields[f]+'],'+formID+'input[name='+fields[f]+'],'+formID+'textarea[name='+fields[f]+'],'+formID+'span[name='+fields[f]+']').parent().parent();
+				var fieldS = $j(formID+'select[name='+fields[f]+'],'+formID+'input[name='+fields[f]+'],'+formID+'textarea[name='+fields[f]+'],'+formID+'span[name='+fields[f]+']');
+				if(fieldS.prop("type") == "hidden")
+					continue;
+				
+				fieldS = fieldS.parent().parent();
 				fieldS.css("display", "none");
 				if(fieldS.prev().hasClass("FormSeparatorWithLabel") || fieldS.prev().hasClass("FormSeparatorWithoutLabel"))
 					fieldS.prev().css("display", "none");
@@ -809,7 +828,11 @@ var contentManager = {
 
 		if(mode == "show")
 			for (var f = 0; f < fields.length; f++) {
-				var fieldS = $j(formID+'select[name='+fields[f]+'],'+formID+'input[name='+fields[f]+'],'+formID+'textarea[name='+fields[f]+'],'+formID+'span[name='+fields[f]+']').parent().parent();
+				var fieldS = $j(formID+'select[name='+fields[f]+'],'+formID+'input[name='+fields[f]+'],'+formID+'textarea[name='+fields[f]+'],'+formID+'span[name='+fields[f]+']');
+				if(fieldS.prop("type") == "hidden")
+					continue;
+				
+				fieldS = fieldS.parent().parent();
 				fieldS.css("display", "");
 				
 				if(fieldS.prev().hasClass("FormSeparatorWithLabel") || fieldS.prev().hasClass("FormSeparatorWithoutLabel"))
@@ -852,7 +875,6 @@ var contentManager = {
 		
 		if(event.keyCode == 9)
 			return;
-		
 		
 		
 		if($j('#'+timeInputID).val().length == 2 && $j('#'+timeInputID).val().lastIndexOf(':') == -1){

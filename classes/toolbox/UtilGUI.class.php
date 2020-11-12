@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class UtilGUI extends Util {
 	function __construct($nonSense = ""){}
@@ -43,10 +43,10 @@ class UtilGUI extends Util {
 	 * @param string $dataClass
 	 * @param string $dataClassID 
 	 */
-	public static function EMailPopup($dataClass, $dataClassID, $callbackParameter = null, $onSuccessFunction = null, $onAbortFunction = null, $return = false){
+	public static function EMailPopup($dataClass, $dataClassID, $callbackParameter = null, $onSuccessFunction = null, $onAbortFunction = null, $return = false, $inWindow = false){
 		$c = new $dataClass($dataClassID);
 		$data = $c->getEMailData($callbackParameter);
-
+		
 		$html = "";
 		
 		if(isset($data["attachmentsAlways"]))
@@ -56,6 +56,8 @@ class UtilGUI extends Util {
 		#$html .= "<p class=\"prettyTitle\">Neue E-Mail</p>";
 		
 		#$html .= "<div style=\"clear:both;\"></div>";
+		
+		$useOther = (isset($data["allowOtherRecipient"]) AND $data["allowOtherRecipient"]);
 		
 		$tab = new HTMLTable(2);
 		$tab->setColWidth(1, "120px;");
@@ -67,16 +69,27 @@ class UtilGUI extends Util {
 			$tab->addLV("Absender:", $I);
 		}
 		if(is_array($data["recipients"])){
-			if(count($data["recipients"]) == 1)
+			if(count($data["recipients"]) == 1 AND !$useOther)
 				$tab->addLV("Empfänger:", $data["recipients"][0][0]."<br /><small style=\"color:grey;\">&lt;".$data["recipients"][0][1]."&gt;</small>");
 			else {
 				$recipients = array();
 				foreach($data["recipients"] AS $ID => $Rec)
-					$recipients[$ID] = new HTMLInput ($Rec[0]." &lt;".$Rec[1]."&gt;", "option", $ID);;
+					$recipients[$ID] = new HTMLInput ($Rec[0]." &lt;".$Rec[1]."&gt;", "option", $ID);
 
+				$IO = "";
+				if($useOther){
+					$recipients[-1] = T::_("Anderer Empfänger");
+					
+					$IO = new HTMLInput("otherRecipient", "text");
+					$IO->style("display:none;margin-top:5px;");
+					$IO->placeholder("E-Mail-Adresse");
+				}
+				
 				$IS = new HTMLInput("EMailRecipient$dataClassID", "select", isset($data["default"]) ? $data["default"] : "0", $recipients);
 				$IS->id("EMailRecipient$dataClassID");
+				$IS->onchange("if(this.value != '-1') { \$j('[name=otherRecipient]').hide(); } else { \$j('[name=otherRecipient]').show(); }");
 
+				
 				$BP = "";
 				if(isset($data["cc"])){
 					$BP = new Button("Empfänger hinzufügen", "./images/i2/add.png", "icon");
@@ -84,7 +97,7 @@ class UtilGUI extends Util {
 					$BP->onclick("\$j('#EMailCC1Row$dataClassID').toggle();");
 				}
 				
-				$tab->addLV("Empfänger:", $BP.$IS);
+				$tab->addLV("Empfänger:", $BP.$IS.$IO);
 			}
 		}
 		
@@ -129,10 +142,13 @@ class UtilGUI extends Util {
 			$onSuccessFunction = "".OnEvent::reload("Left")." Popup.close('Util', 'edit');";
 		
 
-		$BAbort = new Button("Abbrechen","stop");
-		if($onAbortFunction == null)
-			$BAbort->onclick("Popup.close('Util', 'edit');");
-		else
+		$BAbort = new Button("Abbrechen", ($inWindow ? "." : "")."./images/navi/stop.png");
+		if($onAbortFunction == null){
+			if($inWindow)
+				$BAbort->onclick("window.close();");
+			else
+				$BAbort->onclick("Popup.close('Util', 'edit');");
+		} else
 			$BAbort->onclick($onAbortFunction);
 		$BAbort->style("margin-bottom:10px;margin-top:10px;");
 		
@@ -141,7 +157,7 @@ class UtilGUI extends Util {
 			$optional .= "\$j('#UtilEmailFormAttachments input[type=checkbox]:checked').each(function(k, v){ files += \$j(v).data('value')+'##'; });";
 		}
 		
-		$BGo = new Button("E-Mail\nsenden","okCatch");
+		$BGo = new Button("E-Mail\nsenden", ($inWindow ? "." : "")."./images/navi/okCatch.png");
 		$BGo->style("float:right;margin-top:10px;");
 		$BGo->loading();
 		$BGo->doBefore("$optional %AFTER");
@@ -151,11 +167,12 @@ class UtilGUI extends Util {
 			array(
 				"$('EMailSubject$dataClassID').value",
 				"\$j('#EMailBody$dataClassID').val()", 
-				(is_array($data["recipients"]) AND count($data["recipients"]) == 1) ? "0" : "$('EMailRecipient$dataClassID').value",
+				(is_array($data["recipients"]) AND count($data["recipients"]) == 1 AND !$useOther) ? "0" : "$('EMailRecipient$dataClassID').value",
 				"'".$callbackParameter."'", 
 				"files", 
 				(!isset($data["cc"]) ? "-1" : "\$j('#EMailCC1$dataClassID').val()"),
-				(trim(trim($data["fromAddress"]) == "") ? "\$j('#EMailSender$dataClassID').val()" : "''")
+				(trim(trim($data["fromAddress"]) == "") ? "\$j('#EMailSender$dataClassID').val()" : "''"),
+				"\$j('[name=otherRecipient]').val()"
 			), $onSuccessFunction);
 		
 		#$BGo->onclick("CloudKunde.directMail('$this->ID', '$data[recipientAddress]', $('EMailSubject$this->ID').value, $('EMailBody$this->ID').value); ");
@@ -266,10 +283,22 @@ class UtilGUI extends Util {
 					$BD->style("color:#333;");
 					$BD->doBefore("event.stopPropagation(); %AFTER");
 					$BD->rmePCR("Util", "-1", "reminderDone", array("'KalenderEvent'", "'".$E->UID()."'"), "function(){ \$j('#bottom').html(''); \$j('#$id').hide(); if(!\$j('.event:visible').length) window.close(); }");
-					
+					#print_r($E);
+					$actions = "";
+										
+					if($E->ownerClass() == "mTodoGUI"){
+						$T = new Todo($E->ownerClassID());
+						if($T->A("TodoClass") == "DBMail"){
+							$BWindow = new Button("Neues Fenster", "new_window", "iconicL");
+							$BWindow->windowRme("Mail", $T->A("TodoClassID"), "getInWindow");
+							$BWindow->style("margin-left:10px;");
+			
+							$actions = $BWindow."";
+						}
+					}
 					$R[] = array(
 						$id,
-						"<div class=\"event\" id=\"$id\" style=\"padding:5px;cursor:pointer;\" onclick=\"\$j('.confirm').removeClass('confirm'); \$j(this).addClass('confirm');\$j('#bottom').html('".str_replace("\n", "", $E->summary() != "" ? addslashes($E->summary()) : "Keine Beschreibung")."');\" onmouseover=\"\$j(this).addClass('highlight');\" onmouseout=\"\$j(this).removeClass('highlight');\">
+						"<div class=\"event\" id=\"$id\" style=\"padding:5px;cursor:pointer;\" onclick=\"\$j('.confirm').removeClass('confirm'); \$j(this).addClass('confirm');\$j('#bottom').html('".str_replace("\n", "", $E->summary() != "" ? addslashes($E->summary()) : "Keine Beschreibung")."');\$j('#actions').html(window.atob('". base64_encode($actions)."'));\" onmouseover=\"\$j(this).addClass('highlight');\" onmouseout=\"\$j(this).removeClass('highlight');\">
 							<div style=\"width:15%;display:inline-block;vertical-align:top;\">
 								Kalender
 							</div><div style=\"width:45%;display:inline-block;overflow:hidden;vertical-align:top;\">
@@ -350,7 +379,8 @@ class UtilGUI extends Util {
 			<div id=\"top\" style=\"height:124px;overflow:auto;\">
 				
 			</div>
-			<div id=\"bottom\" style=\"padding:5px;height:150px;box-sizing:border-box;background-color:white;overflow:auto;\">
+			<div id=\"bottom\" style=\"padding:5px;height:150px;box-sizing:border-box;background-color:#eee;overflow:auto;\"></div>
+			<div id=\"actions\" style=\"padding:5px;\">
 			
 			</div>";
 		

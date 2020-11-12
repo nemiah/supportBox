@@ -268,6 +268,7 @@ input[type=radio],
 input[type=checkbox],
 input[type=button],
 input[type=submit],
+input[type=date],
 select,
 .AJAXUpload,
 button {
@@ -284,6 +285,12 @@ button {
 	-webkit-box-sizing: border-box;
 }
 
+input[type=date] {
+	font-size:80%;
+	padding:0px;
+}
+
+input[type=date],
 input[type=text],
 input[type=submit],
 input[type=password],
@@ -316,10 +323,12 @@ textarea {
 	padding-left:2px;
 	font-size:1.1em;
 	height:60px;
+	min-height:60px;
 	box-sizing: border-box;
 	-moz-box-sizing: border-box;
 	-webkit-box-sizing: border-box;
 	padding:5px;
+	resize: vertical;
 }
 
 .hasFocus {
@@ -608,6 +617,16 @@ div + .Tab {
 	padding:0px;
 }
 
+.dashboardButton {
+	cursor:pointer;
+	transition: background-color .5s;
+	padding:15px;
+	padding-left:10px;
+	padding-right:10px;
+	min-height:70px;
+	margin:-7px;
+}
+
 .desktopButton {
 	cursor:pointer;
 	min-height:80px;
@@ -619,13 +638,10 @@ div + .Tab {
 	-o-transition: background-color .5s; /* Opera */
 }
 
-.phynxNoTouch .desktopButton:hover {
+.phynxNoTouch .desktopButton:hover, .phynxNoTouch .dashboardButton:hover {
 	background-color:#E0E0E0;
 	
 	transition: background-color .5s;
-	-moz-transition: background-color .5s; /* Firefox 4 */
-	-webkit-transition: background-color .5s; /* Safari and Chrome */
-	-o-transition: background-color .5s; /* Opera */
 }
 
 .desktopButton ~ .desktopButton {
@@ -656,6 +672,7 @@ div + .Tab {
 	margin-bottom:0px;
 	margin-left:-170px;
 	float:left;
+	border-spacing:0;
 }
 
 #contentLeft .sideTableRight {
@@ -664,7 +681,19 @@ div + .Tab {
 	margin-left:0px;
 	margin-top:0px;
 	margin-bottom:0px;
-	margin-right:-170px;
+	margin-right:-165px;
+	border-spacing:0;
+}
+
+#contentRight .sideTableLeft td,
+#contentLeft .sideTableRight td {
+	padding-top:0;
+	padding-bottom:6px;
+}
+
+#contentRight .sideTableLeft td:empty,
+#contentLeft .sideTableRight td:empty {
+    display:none;
 }
 
 .sideTableRight .buttonSettings {
@@ -849,8 +878,6 @@ input[type=button][name=currentSaveButton], input[type=button][name=submitForm] 
 	background-color:#DDD;
 }
 
-
-/*.ui-widget-content,*/
 .ui-datepicker-calendar .ui-state-default {
 	border:0px;
 }
@@ -860,7 +887,7 @@ input[type=button][name=currentSaveButton], input[type=button][name=submitForm] 
 }
 
 .ui-widget-content .ui-state-active {
-	background-color:#ffb400;
+	background-color:#CCC;
 }
 
 .ui-widget-content .ui-state-focus {
@@ -872,10 +899,30 @@ input[type=button][name=currentSaveButton], input[type=button][name=submitForm] 
 	width:auto !important;
 }
 
+.ui-menu-item-wrapper {
+	display:block;
+	box-sizing:border-box;
+	width:100%
+}
+
+.ui-menu .ui-state-active {
+	margin: 0px;
+}
+
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active,
+a.ui-button:active,
+.ui-button:active,
+.ui-button.ui-state-active:hover {
+	border: 0;
+	color: #222;
+}
+
 .tableWeightLightColored {
 	border-spacing: 0 0px;
 }
-
+/*
 .mce-panel {
 	border: 0px !important;
 	background-image: none !important;
@@ -884,7 +931,7 @@ input[type=button][name=currentSaveButton], input[type=button][name=submitForm] 
 .mce-btn {
 	background-image: none !important;
 	background-color:#ddd !important;
-}
+}*/
 
 .mce-i-phynximage:before{content:"\e014"}
 

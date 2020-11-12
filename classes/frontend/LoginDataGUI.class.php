@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class LoginDataGUI extends LoginData implements iGUIHTML2 {
 	function getHTML($id){
@@ -200,6 +200,22 @@ class LoginDataGUI extends LoginData implements iGUIHTML2 {
 			$onSave .= OnEvent::reloadPopup("mVUser");
 		}
 		
+		if($bps != -1 AND isset($bps["preset"]) AND $bps["preset"] == "klickTippAPI"){
+			$gui->type("UserID", "hidden");
+			$this->changeA("UserID", "-1");
+
+			$gui->type("name", "hidden");
+			$this->changeA("name", "KlickTippAPIData");
+
+			$gui->type("optionen", "hidden");
+			#$gui->type("passwort", "hidden");
+			#$gui->type("server", "hidden");
+			
+			$gui->label("server", "API key");
+			
+			$onSave .= OnEvent::reloadPopup("mKlickTipp");
+		}
+		
 		if($bps != -1 AND isset($bps["preset"]) AND $bps["preset"] == "backupFTPServer"){
 			$BAbort = new Button("Abbrechen", "stop");
 			$BAbort->onclick("Popup.close('LoginData', 'edit');");
@@ -212,6 +228,24 @@ class LoginDataGUI extends LoginData implements iGUIHTML2 {
 
 			$gui->type("name", "hidden");
 			$this->changeA("name", "BackupFTPServerUserPass");
+
+			$gui->descriptionField("optionen", "Bitte geben Sie hier das Unterverzeichnis an, in das die Datei hochgeladen werden soll");
+			$gui->label("optionen", "Verzeichnis");
+			#$gui->type("optionen", "hidden");
+		}
+		
+		if($bps != -1 AND isset($bps["preset"]) AND $bps["preset"] == "backupFTPsServer"){
+			$BAbort = new Button("Abbrechen", "stop");
+			$BAbort->onclick("Popup.close('LoginData', 'edit');");
+			$BAbort->style("float:right;");
+			
+			$html = "<p style=\"padding:5px;\">{$BAbort}<small>Sie müssen hier nur Einstellungen vornehmen, wenn Sie die Backups automatisch auf einen FTPs-Server hochladen möchten.</small></p>";
+
+			$gui->type("UserID", "hidden");
+			$this->changeA("UserID", "-1");
+
+			$gui->type("name", "hidden");
+			$this->changeA("name", "BackupFTPsServerUserPass");
 
 			$gui->descriptionField("optionen", "Bitte geben Sie hier das Unterverzeichnis an, in das die Datei hochgeladen werden soll");
 			$gui->label("optionen", "Verzeichnis");
@@ -277,6 +311,22 @@ class LoginDataGUI extends LoginData implements iGUIHTML2 {
 			$gui->type("optionen", "hidden");
 			$gui->type("server", "hidden");
 			$gui->type("passwort", "hidden");
+		}
+
+		if($bps != -1 AND isset($bps["preset"]) AND $bps["preset"] == "P.meIDAndPIN"){
+
+			$html = "";
+			
+			$gui->type("UserID", "hidden");
+			$this->changeA("UserID", "-1");
+			$gui->label("benutzername", "CustomerID");
+			$gui->type("name", "hidden");
+			$gui->label("passwort", "PIN");
+			$this->changeA("name", "P.meIDAndPIN");
+			$gui->type("optionen", "hidden");
+			$gui->type("server", "hidden");
+			
+			$onSave = OnEvent::reload("Screen").OnEvent::closePopup("LoginData");
 		}
 		
 		if($bps != -1 AND isset($bps["preset"]) AND $bps["preset"] == "adServer"){

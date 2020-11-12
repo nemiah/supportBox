@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 
 /**var cookieManager = {
@@ -37,7 +37,7 @@ Ajax.Responders.register({
 
 	onFailure: function(transport) {
 		//console.log(transport);
-		showMessage("<b style=\"color:red\">Server nicht<br />erreichbar</b>");
+		showMessage("<b style=\"color:red\">Server nicht<br>erreichbar</b>");
 		Interface.endLoading();
 		$j('.loading').removeClass("loading").prop('disabled', false);
 		//alert("An error occured: "+transport);
@@ -63,6 +63,15 @@ function checkResponse(transport, hideError) {
 
 	if(response == "SESSION EXPIRED"){
 		alert("Ihre Sitzung ist abgelaufen, bitte loggen Sie sich erneut ein.");
+		Menu.onTimeout();
+		return false;
+	}
+
+	if(response == "NO USER SESSION"){
+		if(hideError)
+			return true;
+		
+		alert("Sie sind nicht angemeldet, bitte loggen Sie sich erneut ein.");
 		Menu.onTimeout();
 		return false;
 	}
@@ -162,6 +171,9 @@ function rmeP(targetClass, targetClassId, targetMethod, targetMethodParameters, 
  
 
 function windowWithRmeP(targetClass, targetClassId, targetMethod, targetMethodParameters, bps, target){
+	if(window.safari !== undefined) //Safari logs out user when windowWithRmeP is used, don't know why 
+		return windowWithRme(targetClass, targetClassId, targetMethod, targetMethodParameters, bps, target);
+	
 	if(typeof target == "undefined")
 		target = "window";
 
@@ -227,6 +239,7 @@ function windowWithRme(targetClass, targetClassId, targetMethod, targetMethodPar
 	var left = 20;
 	var top = 20;
 	var name = 'Druckansicht';
+	var onload = null;
 	var scroll = true;
 	if(typeof windowOptions != "undefined"){
 		if(windowOptions.height)
@@ -250,7 +263,7 @@ function windowWithRme(targetClass, targetClassId, targetMethod, targetMethodPar
 	
 	var options = 'height='+height+',width='+width+',left='+left+',top='+top+',scrollbars='+(scroll ? "yes" : "no")+',resizable=yes';
 	
-	if(typeof target == "undefined")
+	if(typeof target == "undefined" || target == '')
 		target = "window";
 
  	if(typeof targetMethodParameters != "string"){
@@ -338,12 +351,12 @@ function joinFormFields(formIDs){
 				if($(formID).elements[i].checked) setString += "&"+$(formID).elements[i].name+"=1";
 				else setString += "&"+$(formID).elements[i].name+"=0";
 			} else if($(formID).elements[i].type == "select-multiple"){
-				setString += "&"+$(formID).elements[i].name+"=";
-				subString = "";
+				setString += "&"+$(formID).elements[i].name+"="+$j($(formID).elements[i]).val().join(';:;');
+				/*subString = "";
 				for(j = 0; j < $(formID).elements[i].length; j++)
 					if($(formID).elements[i].options[j].selected) subString += (subString != "" ? ";:;" : "")+$(formID).elements[i].options[j].value;
 
-				setString += subString;
+				setString += subString;*/
 
 			} else setString += "&"+$(formID).elements[i].name+"="+encodeURIComponent($(formID).elements[i].value);
 		}

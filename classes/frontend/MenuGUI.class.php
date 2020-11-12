@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class MenuGUI extends UnpersistentClass implements iGUIHTML2, icontextMenu {
 	function  __construct() {
@@ -43,10 +43,16 @@ class MenuGUI extends UnpersistentClass implements iGUIHTML2, icontextMenu {
 		$newAppIco = Aspect::joinPoint("appLogo", $this, __METHOD__, array($_SESSION["applications"]->getActiveApplication()));
 		if($newAppIco != null) $appIco = $newAppIco;
 		// </editor-fold>
-
+		
+		try {
+			$layout = mUserdata::getUDValueS("phynxLayout", "horizontal");
+		} catch (Exception $e){
+			$layout = "horizontal";
+		}
+		
 		$appMenuHidden = "";
 		$appMenuDisplayed = "";
-		$appMenuActive = (!$_SESSION["S"]->isUserAdmin() AND (!isset($_COOKIE["phynx_layout"]) OR $_COOKIE["phynx_layout"] == "fixed" OR $_COOKIE["phynx_layout"] == "horizontal" OR $_COOKIE["phynx_layout"] == "desktop" OR $_COOKIE["phynx_layout"] == "vertical"));
+		$appMenuActive = (!$_SESSION["S"]->isUserAdmin() AND ($layout == "fixed" OR $layout == "horizontal" OR $layout == "desktop" OR $layout == "vertical"));
 
 		// <editor-fold defaultstate="collapsed" desc="Aspect:jP">
 		$aspectAppMenuActive = Aspect::joinPoint("appMenuActive", $this, __METHOD__);
@@ -64,11 +70,12 @@ class MenuGUI extends UnpersistentClass implements iGUIHTML2, icontextMenu {
 		
 
 		$bigWorld = false;
-		if(isset($_COOKIE["phynx_layout"]) AND ($_COOKIE["phynx_layout"] == "desktop" OR $_COOKIE["phynx_layout"] == "vertical"))
+		if($layout == "desktop" OR $layout == "vertical")
 			$bigWorld = true;
 		
 		if(!$_SESSION["S"]->isUserAdmin()) {
-			$userHiddenPlugins = mUserdata::getHiddenPlugins(true);
+			$userHiddenPlugins= mUserdata::getHiddenPlugins(true);
+			$userHiddenPlugins = Aspect::joinPoint("alterHidden", $this, __METHOD__, array($userHiddenPlugins), $userHiddenPlugins);
 			
 			$U = new mUserdata();
 			$U->addAssocV3("typ","=","TTP");
@@ -126,17 +133,18 @@ class MenuGUI extends UnpersistentClass implements iGUIHTML2, icontextMenu {
 
 			$key = Aspect::joinPoint("renameTab", $this, __METHOD__, array($key), $key);
 			
-			if(isset($_COOKIE["phynx_layout"]) AND ($_COOKIE["phynx_layout"] == "vertical" OR $_COOKIE["phynx_layout"] == "desktop"))
+			if($layout == "vertical" OR $layout == "desktop")
 				$t = "big";
 
 			#$emptyFrame = "contentLeft";
 			#if(isset($ts[$value]) AND $ts[$value] == "contentLeft") $emptyFrame = "contentRight";
 
-			#$onclick = "contentManager.emptyFrame('contentLeft'); contentManager.emptyFrame('contentRight'); contentManager.emptyFrame('contentScreen'); contentManager.loadFrame('".(isset($ts[$value]) ? $ts[$value] : "contentRight")."', '$value', -1, 0, '{$value}GUI;-');$('windows').update('');";
-			$onclick = "contentManager.loadPlugin('".(isset($ts[$value]) ? $ts[$value] : "contentRight")."', '$value', '{$value}GUI;-');";
+			$class = Aspect::joinPoint("alterClass", $this, __METHOD__, array($value), $value);
 			
-			$B = new Button(T::_($key),$icons[$value]);
-			$B->type("icon");
+			#$onclick = "contentManager.emptyFrame('contentLeft'); contentManager.emptyFrame('contentRight'); contentManager.emptyFrame('contentScreen'); contentManager.loadFrame('".(isset($ts[$value]) ? $ts[$value] : "contentRight")."', '$value', -1, 0, '{$value}GUI;-');$('windows').update('');";
+			$onclick = "contentManager.loadPlugin('".(isset($ts[$value]) ? $ts[$value] : "contentRight")."', '$class', '{$class}GUI;-');";
+			
+			$B = new Button($key,$icons[$value], "icon");
 			$B->style("float:left;margin-right:10px;");
 
 			$BM = new Button("Reihenfolge ändern","./images/i2/topdown.png");
@@ -167,7 +175,7 @@ class MenuGUI extends UnpersistentClass implements iGUIHTML2, icontextMenu {
 
 			$style = ((strpos($appMenuHidden, $value) !== false AND $appMenuActive) ? "style=\"display:none;\"" : "");
 
-			$BP = new Button(T::_($key), $icons[$value], "icon");
+			$BP = new Button($key, $icons[$value], "icon");
 			$BP->id($value."MenuImage");
 			if(($t == null OR $t == "big"))
 				$BP->className ("tabImg");
@@ -176,14 +184,14 @@ class MenuGUI extends UnpersistentClass implements iGUIHTML2, icontextMenu {
 			$BP->style("width:32px;height:32px;");
 			
 			$hideClass = "";
-			if(Session::isUserAdminS() AND Session::isInstallation() AND $value != "mInstallation")
+			if(Session::isUserAdminS() AND Session::isInstallation() AND $value != "mInstallation" AND $value != "mWartung")
 				$hideClass = " installHiddenTab";
 			
 			
 			echo "
 				
 				<div
-					id=\"".$value."MenuEntry\"
+					id=\"".$class."MenuEntry\"
 					class=\"navBackgroundColor navBorderColor ".(($t == null OR $t == "big") ? "" : " smallTab")." navTab$hideClass\"
 					$style
 					>
@@ -347,7 +355,7 @@ class MenuGUI extends UnpersistentClass implements iGUIHTML2, icontextMenu {
 			$U->setUserdata("ToggleTab$plugin","big","TTP");
 	}
 	
-	public function getActiveApplicationName(){
+	public function getActiveApplicationName($return = false){
 		// <editor-fold defaultstate="collapsed" desc="Aspect:jP">
 		try {
 			$MArgs = func_get_args();
@@ -355,15 +363,21 @@ class MenuGUI extends UnpersistentClass implements iGUIHTML2, icontextMenu {
 		} catch (AOPNoAdviceException $e) {}
 		Aspect::joinPoint("before", $this, __METHOD__, $MArgs);
 		// </editor-fold>
-		$name = Applications::activeApplication();
-		echo Environment::getS("renameApplication:$name", $name." ".Applications::activeVersion());
+		
+		$name = Applications::activeApplicationLabel();
+		$n = Environment::getS("renameApplication:$name", $name)." ".Applications::activeVersion();
+		
+		if($return)
+			return $n;
+		
+		echo $n;
 	}
 	
 	public function getContextMenuHTML($identifier){
 		$sk = Applications::activeApplication();#$_SESSION["applications"]->getActiveApplication();
 		$kal = Applications::getList();#$_SESSION["applications"]->getApplicationsList();
 		$kal = array_flip($kal);
-
+		natcasesort($kal);
 		#print_r($kal);
 		#foreach($kal as $k => $v)
 		#	$kal[$k] = $k;

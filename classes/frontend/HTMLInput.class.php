@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class HTMLInput {
 	private $type;
@@ -404,6 +404,8 @@ class HTMLInput {
 					<script type=\"text/javascript\">
 						QQUploader$currentId = new qq.FileUploader({
 							maxSizePossible: '".ini_get("upload_max_filesize")."B',
+							uploadButtonText: '".T::_("Datei auswählen")."',
+							dragText: '".T::_("Datei hier ablegen zum Hochladen")."',
 							sizeLimit: ".Util::toBytes(ini_get("upload_max_filesize")).",
 							element: \$j('#$currentId')[0],
 							action: '".(($this->options != null AND isset($this->options["action"])) ? $this->options["action"] : "./interface/set.php")."',
@@ -462,7 +464,7 @@ class HTMLInput {
 					$this->type = "file";
 				
 				if($this->isDisplayMode) {
-					if($this->type == "checkbox") return Util::catchParser($this->value);
+					if($this->type == "checkbox") return Util::catchParser($this->value, "load", "", $this->style);
 					if($this->type == "hidden") return "";
 					if($this->type == "password") return str_repeat("*", mb_strlen($this->value));
 					return $this->value."";
@@ -678,7 +680,7 @@ class HTMLInput {
 								$v->parentValue($this->value);
 							
 							$v->isSelected(false);
-							if($this->value == $k OR $v->getValue() == $this->value)
+							if($this->value == $k OR $this->value."" == $v->getValue()."")
 								$v->isSelected(true);
 							$html .= $v;
 						}

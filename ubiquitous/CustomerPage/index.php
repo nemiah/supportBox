@@ -105,8 +105,12 @@ if(isset($I)){
 		echo $meta;
 		?>
 		<title><?php echo $pageTitle; ?></title>
-		
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="mobile-web-app-capable" content="yes" />
+
 		<link rel="stylesheet" type="text/css" href="./lib/jquery-ui-1.8.24.custom.css" />
+		<link rel="stylesheet" href="./lib/trumbowyg/ui/trumbowyg.min.css">
 		<!--<link rel="stylesheet" type="text/css" href="./lib/default.css" />-->
 		<link rel="stylesheet" type="text/css" href="./lib/default.css?r=<?php echo rand(); ?>" />
 		<style type="text/css">
@@ -123,6 +127,8 @@ if(isset($I)){
 		<script type="text/javascript" src="./lib/noty/topLeft.js"></script>
 		<script type="text/javascript" src="./lib/noty/default.js"></script>
 		<script type="text/javascript" src="./lib/jquery.hammer.min.js"></script>
+		<script type="text/javascript" src="./lib/trumbowyg/trumbowyg.min.js"></script>
+		<script type="text/javascript" src="./lib/trumbowyg/langs/de.min.js"></script>
 		
 		<script type="text/javascript">
 		$.noty.defaults = {

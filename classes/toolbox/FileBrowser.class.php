@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class FileBrowser {
 	private $dirs = array();
@@ -28,8 +28,8 @@ class FileBrowser {
 	private $foundFiles = array();
 	
 	public function addDir($dir){
-		if($dir{strlen($dir) - 1} == "/") {
-			$dir{strlen($dir) - 1} = " ";
+		if($dir[strlen($dir) - 1] == "/") {
+			$dir[strlen($dir) - 1] = " ";
 			$dir = trim($dir);
 		}
 		
@@ -37,12 +37,12 @@ class FileBrowser {
 	}
 	
 	public function addExcludedExtension($ext){
-		if($ext{0} != ".") $ext = ".".$ext;
+		if($ext[0] != ".") $ext = ".".$ext;
 		$this->excludeExtensions[] = strtolower(trim($ext));
 	}
 	
 	public function addOnlyExtension($ext){
-		if($ext{0} != ".") $ext = ".".$ext;
+		if($ext[0] != ".") $ext = ".".$ext;
 		$this->onlyExtensions[] = $ext;
 	}
 	
@@ -61,7 +61,7 @@ class FileBrowser {
 			return;
 		while(($file = readdir($fp)) !== false) {
 			if(is_dir("$dir/$file") AND !$this->isRecursive) continue;
-			elseif($this->isRecursive AND is_dir("$dir/$file") AND $file{0} != ".")
+			elseif($this->isRecursive AND is_dir("$dir/$file") AND $file[0] != ".")
 				$this->searchFolder("$dir/$file");
 
 			$c = false;
@@ -101,7 +101,7 @@ class FileBrowser {
 		$this->parameter = $parameter;
 	}
 	
-	public function getAsLabeledArray($interface, $extension, $sorted = false){
+	public function getAsLabeledArray($interface, $extension, $sorted = false, $withCategory = false){
 		$this->addImplementedInterface($interface, $extension);
 		$this->getAsArray();
 		
@@ -109,16 +109,24 @@ class FileBrowser {
 		foreach($this->foundFiles as $key => $value){
 			$class = str_replace($this->onlyExtensions,"",$value);
 			try {
-				if($this->parameter != "nil") $class = new $class($this->parameter);
-				else $class = new $class();
+				if($this->parameter != "nil") 
+					$class = new $class($this->parameter);
+				else
+					$class = new $class();
 
-				if($class->getLabel() == null) continue;
+				if($class->getLabel() == null) 
+					continue;
+				
 				$labeled[$class->getLabel()] = get_class($class);
+				if($withCategory)
+					$labeled[$class->getLabel()] = array(get_class($class), $class->getCategory());
 			} catch(ClassNotFoundException $e){
 				continue;
 			}
 		}
-		if($sorted) ksort($labeled);
+		if($sorted) 
+			ksort($labeled);
+		
 		return $labeled;
 	}
 	

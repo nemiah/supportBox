@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 
 class OnEvent {
@@ -31,7 +31,7 @@ class OnEvent {
 	 */
 	public static function window($targetObject, $targetMethod, $targetMethodParameters = "", $bps = null, $target = null){
 		$useID = "-1";
-		if(!($targetObject instanceof Collection))
+		if(!($targetObject instanceof Collection) AND !($targetObject instanceof UnpersistentClass))
 			$useID = ($targetObject->getID() == "" ? "-1" : $targetObject->getID());
 		
 		if(!is_numeric($useID))

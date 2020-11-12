@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 
 class SpellbookGUI implements iGUIHTMLMP2 {
@@ -79,6 +79,7 @@ class SpellbookGUI implements iGUIHTMLMP2 {
 		$html .= "<div style=\"float:right;width:160px;padding-top:20px;\" id=\"SpellbookSortTabs\">".$this->getSortable(false)."</div>
 			<div class=\"SpellbookContainer\">";
 		
+			
 		$U = new mUserdata();
 		$U->addAssocV3("typ","=","TTP");
 		$collapsedTabs = Environment::getS("collapsedTabs", "0") == "1";
@@ -125,7 +126,7 @@ class SpellbookGUI implements iGUIHTMLMP2 {
 			$BG->style("float:right;margin-top:-7px;");
 			
 			$B = new Button($key, $icons[$value], "icon");
-			$B->style("float:left;margin-right:10px;margin-top:-7px;margin-left:-5px;");
+			$B->style("float:left;margin-right:10px;margin-top:-7px;margin-left:-5px;width:32px;");
 			
 			$I = new HTMLInput("usePlugin$value", "checkbox", in_array($value, $appMenuDisplayed) ? "1" : "0");
 			$I->id("usePlugin$value");
@@ -143,15 +144,15 @@ class SpellbookGUI implements iGUIHTMLMP2 {
 			$IM->id("minPlugin$value");
 			$IM->onchange("Menu.toggleTab('$value');");
 			
-			if(isset($_COOKIE["phynx_layout"]) AND ($_COOKIE["phynx_layout"] == "vertical" OR $_COOKIE["phynx_layout"] == "desktop"))
+			$layout = mUserdata::getUDValueS("phynxLayout", "horizontal");
+			if($layout == "vertical" OR $layout == "desktop")
 				$IM->isDisabled (true);
 			
 			if(!in_array($value, $appMenuDisplayed))
 				$IM->isDisabled (true);
 			
 			#border-width:1px;border-style:solid;
-			$html .= "
-			<div style=\"\" class=\"SpellbookSpell\">
+			$html .= "<div style=\"\" class=\"SpellbookSpell\">
 				<div style=\"margin:10px;\" class=\"borderColor1 spell\">
 					<div class=\"backgroundColor2\" style=\"padding:10px;padding-bottom:5px;\">
 						$BG$B<h2 style=\"margin-bottom:0px;margin-top:0px;\">$key</h2>
@@ -226,8 +227,7 @@ class SpellbookGUI implements iGUIHTMLMP2 {
 			$B->style("float:left;margin-right:10px;margin-top:-7px;margin-left:-5px;");
 			
 			#border-width:1px;border-style:solid;
-			$html .= "
-			<div style=\"\" class=\"SpellbookSpell\">
+			$html .= "<div style=\"\" class=\"SpellbookSpell\">
 				<div style=\"margin:10px;border-radius:5px;\" class=\"borderColor1 spell\">
 					<div class=\"backgroundColor2\" style=\"padding:10px;padding-bottom:5px;\">
 						$B<span style=\"float:right;margin-top:7px;\">".($isAdmin ? "Admin!" : "")."</span><h2  style=\"margin-bottom:0px;margin-top:0px;\">$key</h2>
@@ -242,6 +242,42 @@ class SpellbookGUI implements iGUIHTMLMP2 {
 		
 		#echo "</pre>";
 		return $html;
+	}
+	
+	public function clearToken(){
+		$U = new UserGUI(Session::currentUser()->getID());
+		$U->clearWebAuthData();
+	}
+	
+	public function changePasswordPopup(){
+		$F = new HTMLForm("changePW", array("oldPW", "newPW1", "newPW2"));
+		$F->getTable()->setColWidth(1, 120);
+		
+		$F->setLabel("oldPW", "Aktuelles Passwort");
+		$F->setLabel("newPW1", "Neues Passwort");
+		$F->setLabel("newPW2", "Wiederholung");
+		
+		$F->setType("oldPW", "password");
+		$F->setType("newPW1", "password");
+		$F->setType("newPW2", "password");
+		
+		$F->setSaveRMEPCR("Speichern", "", "Spellbook", "-1", "changePasswordDo", OnEvent::closePopup("Spellbook"));
+		
+		echo $F;
+	}
+	
+	public function changePasswordDo($old, $new1, $new2){
+		$U = new User(Session::currentUser()->getID());
+		$U->loadMe(false);
+		
+		if($U->A("SHApassword") != sha1($old))
+			Red::alertD("Aktuelles Passwort falsch!");
+		
+		if($new1 != $new2)
+			Red::alertD("Neue Passwörter nicht identisch!");
+		
+		$U->changeA("SHApassword", $new1);
+		$U->saveMe();
 	}
 	
 	public function getSortable($echo){

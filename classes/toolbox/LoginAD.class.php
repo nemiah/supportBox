@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class LoginAD extends Collection {
 	public function lCV3($id = -1, $returnCollector = true, $lazyload = false){
@@ -38,7 +38,7 @@ class LoginAD extends Collection {
 		  $int .= $sint;
 	  }
 
-	  return $int % 2147483647;
+	  return ((int) ($int / 2147483647));
 	}
 
 	private static function getADEntry($result){
@@ -67,22 +67,30 @@ class LoginAD extends Collection {
 			return null;
 		
 		$adServer = "ldap://".$LD->A("server");
-		$ex = explode("@", $LD->A("benutzername"));
 		if($username == null)
 			$username = $LD->A("benutzername");
-		else
-			$username = $username."@".$ex[1];
+		else {
+			if(strpos($LD->A("benutzername"), "@") !== false){
+				$ex = explode("@", $LD->A("benutzername"));
+				$username = $username."@".$ex[1];
+			}
+			
+			if(strpos($LD->A("benutzername"), "\\") !== false){
+				$ex = explode("\\", $LD->A("benutzername"));
+				$username = $ex[0]."\\".$username;
+			}
+		}
 		
 		if($password == null)
 			$password = $LD->A("passwort");
-
+		
 		$ldap = ldap_connect($adServer);
 
 		ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
 		ldap_set_option($ldap, LDAP_OPT_REFERRALS, 0);
 
 		$bind = ldap_bind($ldap, $username, $password);
-
+		
 		if(!$bind) 
 			throw new Exception("Keine Verbindung zu AD-Server");
 
@@ -142,7 +150,9 @@ class LoginAD extends Collection {
 			
 			
 		} catch(Exception $e){}
-		
+		#echo "<pre>";
+		#print_r($collection);
+		#echo "</pre>";
 		
 		$this->collector = array_merge($this->collector, $collection);
 	}
@@ -175,7 +185,24 @@ class LoginAD extends Collection {
 				if(!isset($user["samaccountname"]))
 					continue;
 				
+				if($LD->A("optionen2") != ""){
+					$inGroup = false;
+					if(isset($user["memberof"]))
+						foreach($user["memberof"] AS $k => $v){
+							if(!is_numeric($k))
+								continue;
+
+							if(trim($v) == trim($LD->A("optionen2")))
+								$inGroup = true;
+
+						}
+					
+					if(!$inGroup)
+						continue;
+				}
+				
 				$R = self::getADEntry($user);
+				$R->SHApassword = $password;
 				
 				$U = new User($R->UserID);
 				$U->setA($R);

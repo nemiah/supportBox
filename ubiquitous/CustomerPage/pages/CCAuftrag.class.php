@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 
 ini_set('session.gc_maxlifetime', 24 * 60 * 60);
@@ -27,6 +27,9 @@ class CCAuftrag extends CCPage implements iCustomContent {
 	protected $showButtonCheckWithGoogle = false;
 	protected $showPrices = true;
 	protected $showPosten = true;
+	protected $showSignature = false;
+	protected $increaseCount = false;
+	
 	function __construct() {
 		$this->customize();
 		
@@ -47,12 +50,41 @@ class CCAuftrag extends CCPage implements iCustomContent {
 			$_POST["ort"] = "Genderkingen";
 		}*/
 		$this->loggedIn = true;
-		if(Session::currentUser() == null AND !Users::login($_POST["benutzer"], $_POST["password"], "open3A"))
+		if(Session::currentUser() == null AND !Users::login($_POST["benutzer"], $_POST["password"], "open3A", "default", false, false))
 			$this->loggedIn = false;
 		
 		$this->showZahlungsart = true;
 		$this->showButtonEditAddress = true;
 		$this->showButtonCheckWithGoogle = true;
+	}
+	
+	public function searchCustomer($query){
+		$A = new AdressenGUI();
+		$A->getACData("", $query["P0"]);
+	}
+	
+	public function newDocument($data, $type = "R"){
+		$A = new Auftrag(-1);
+		if(isset($data["P0"]))
+			$AID = $A->newWithDefaultValues($data["P0"]);
+		else {
+			$AID = $A->newWithDefaultValues();
+
+			$F = new Factory("Adresse");
+			$F->sA("AuftragID", $AID);
+			$F->sA("firma", "Barrechnung");
+			$AdresseID = $F->store();
+		}
+		
+		$GRLBMID = $A->createGRLBM($type, true);
+		
+		if(!isset($data["P0"])){
+			$Auftrag = new Auftrag($AID);
+			$Auftrag->changeA("AdresseID", $AdresseID);
+			$Auftrag->saveMe();
+		}
+		
+		return $GRLBMID;
 	}
 	
 	function getTitle(){
@@ -100,6 +132,55 @@ class CCAuftrag extends CCPage implements iCustomContent {
 		}
 	}
 	
+	public function getCustomers(){
+
+		$html = "";
+		
+		
+		$T = new HTMLTable(1);
+		$T->setTableStyle("width:100%;margin-top:10px;");
+		$T->setColWidth(1, 130);
+		$T->useForSelection(false);
+		$T->maxHeight(400);
+		
+		$AC = anyC::get("Adresse", "AuftragID", "-1");
+		$AC->addOrderV3("CONCAT(firma, nachname, vorname)", "ASC");
+		$i = 0;
+		while($Adresse = $AC->n()){
+			#$Adresse = new Adresse($B->A("AdresseID"));
+			$T->addRow(array($Adresse->getHTMLFormattedAddress()));
+			$T->addCellStyle(1, "vertical-align:top;");
+			
+			$T->addRowStyle("cursor:pointer;border-bottom:1px solid #ccc;");
+			
+			
+			/*$T->addRowEvent("click", "
+				$(this).addClass('selected');
+				
+				CustomerPage.rme('getAuftrag', {GRLBMID: ".$B->getID()."}, function(transport){ 
+						if(transport == 'TIMEOUT') { document.location.reload(); return; } 
+						$('#contentLeft').html(transport); 
+					}, 
+					function(){},
+					'POST');
+					
+				CustomerPage.rme('getArtikel', {GRLBMID: ".$B->getID().", query : '', KategorieID: ''}, function(transport){ 
+						if(transport == 'TIMEOUT') { document.location.reload(); return; } 
+						$('#contentRight').html(transport); 
+						$('.selected').removeClass('selected');
+						$('#frameSelect').hide(); $('#frameEdit').show();
+					}, 
+					function(){},
+					'POST');");*/
+			
+			$i++;
+		}
+		
+		$html .= $T;
+		
+		return $html;
+	}
+	
 	private function checkAdresse(){
 		if(!isset($_POST["lead_id"]))
 			die("Keine Lead-ID übergeben!");
@@ -144,7 +225,10 @@ class CCAuftrag extends CCPage implements iCustomContent {
 	public function getAuftrag($data){
 		$Beleg = new GRLBM($data["GRLBMID"]);#$this->createAuftrag(new Adresse(1), "W");
 
+		$Auftrag = new Auftrag($Beleg->A("AuftragID"));
+		$K = Kappendix::getKappendixToKundennummer($Auftrag->A("kundennummer"));
 		
+		$js = "";
 		
 		$TSumme = new HTMLTable(3);
 		$TSumme->setTableStyle("width:100%;border-top:1px solid #AAA;margin-top:30px;");
@@ -155,17 +239,33 @@ class CCAuftrag extends CCPage implements iCustomContent {
 		
 		
 		$IZahlungsart = new HTMLInput("zahlungsart", "select", $Beleg->A("GRLBMpayedVia"), GRLBM::getPaymentVia(null, array("transfer", "debit")));
-		$IZahlungsart->onchange("if(this.value == 'debit') $('#rowZahlungsart').show(); else $('#rowZahlungsart').hide(); CustomerPage.timeout = window.setTimeout(CustomerPage.saveKontodaten, 300);");
+		$IZahlungsart->onchange("if(this.value == 'debit') $('.rowZahlungsart').show(); else $('.rowZahlungsart').hide(); CustomerPage.timeout = window.setTimeout(CustomerPage.saveKontodaten, 300);");
 		
-		$IBankleitzahl = new HTMLInput("bankleitzahl", "text", $Beleg->A("GRLBMBankleitzahl"));
-		$IBankleitzahl->placeholder("Bankleitzahl");
-		$IBankleitzahl->style("margin-top:10px;text-align:right;width:130px;");
+		$IBemerkung = new HTMLInput("bemerkung", "textarea");#, $Beleg->A("textbausteinUnten"));
+		$IBemerkung->style("width:100%;height:100px;max-width:100%;");
+		$IBemerkung->placeholder("Bemerkungen");
+		#$IBemerkung->onblur("");
+		#$IBemerkung->onkeyup("if(CustomerPage.timeout != null) window.clearTimeout(CustomerPage.timeout); CustomerPage.timeout = window.setTimeout(CustomerPage.saveBemerkung, 300);");
+		
+		$TBemerkung = new HTMLTable(2, "Bemerkungen");
+		$TBemerkung->setTableStyle("width:100%;");
+		$TBemerkung->setColWidth(1, 26);
+		
+		$TBemerkung->addRow(array(new Button("Bemerkung", "document_alt_stroke", "iconic"), $IBemerkung));
+		$TBemerkung->addCellStyle(1, "vertical-align:top;");
+		
+		$sepa = json_decode($Beleg->A("GRLBMSEPAData"));
+		
+		
+		$IBankleitzahl = new HTMLInput("BIC", "text", $sepa->BIC);
+		$IBankleitzahl->placeholder("BIC");
+		$IBankleitzahl->style("");
 		$IBankleitzahl->onkeyup("if(CustomerPage.timeout != null) window.clearTimeout(CustomerPage.timeout); CustomerPage.timeout = window.setTimeout(CustomerPage.saveKontodaten, 300);");
 		
-		$IKontonummer = new HTMLInput("kontonummer", "text", $Beleg->A("GRLBMKontonummer"));
-		$IKontonummer->placeholder("Kontonummer");
-		$IKontonummer->style("margin-top:10px;text-align:right;margin-left:10px;width:130px;");
-		$IKontonummer->onkeyup("if(CustomerPage.timeout != null) window.clearTimeout(CustomerPage.timeout); CustomerPage.timeout = window.setTimeout(CustomerPage.saveKontodaten, 300);");
+		$IKontonummer = new HTMLInput("IBAN", "text", $sepa->IBAN);
+		$IKontonummer->placeholder("IBAN");
+		$IKontonummer->style("");
+		$IKontonummer->onkeyup("if(CustomerPage.timeout != null) window.clearTimeout(CustomerPage.timeout); CustomerPage.timeout = window.setTimeout(CustomerPage.getBIC, 300);");
 		#$IBIC = new HTMLInput("bic");
 		#$IIBAN = new HTMLInput("iban");
 		
@@ -181,21 +281,34 @@ class CCAuftrag extends CCPage implements iCustomContent {
 		$TZahlungsart->addRowColspan(2, 2);
 		$TZahlungsart->addCellStyle(1, "vertical-align:top;");
 		
-		$TZahlungsart->addRow(array("", $IBankleitzahl." ".$IKontonummer."$BCheck <div id=\"bankMessage\" style=\"margin-top:6px;\">&nbsp;</div>"));
-		$TZahlungsart->setRowID("rowZahlungsart");
+		$TZahlungsart->addRow(array("", $IKontonummer." $BCheck <div id=\"bankMessage\" style=\"display:none;\">&nbsp;</div>"));
+		$TZahlungsart->addRowClass("rowZahlungsart");
+		
+		$TZahlungsart->addRow(array("", $IBankleitzahl));
+		$TZahlungsart->addRowClass("rowZahlungsart");
+		
+		$IMandat = new HTMLInput("mandat", "checkbox");
+		$IMandat->style("vertical-align:middle;");
+		
+		$TZahlungsart->addRow(array("", $IMandat." SEPA-Mandat erteilt"));
+		$TZahlungsart->addRowClass("rowZahlungsart");
+		
+		$IDatenschutz = new HTMLInput("datenschutz", "checkbox");
+		$IDatenschutz->style("vertical-align:middle;");
+		
+		$TZahlungsart->addRow(array("", $IDatenschutz." Hinweise zum Datenschutz gelesen"));
+		
+		$IAGB = new HTMLInput("agb", "checkbox");
+		$IAGB->style("vertical-align:middle;");
+		
+		$TZahlungsart->addRow(array("", $IAGB." AGB akzeptiert"));
+		
 		if($Beleg->A("GRLBMpayedVia") != "debit")
-			$TZahlungsart->addRowStyle("display:none;");
-		else
-			echo OnEvent::script("CustomerPage.saveKontodaten();");
+			$js .= "$('.rowZahlungsart').hide();";
+		#	$TZahlungsart->addRowStyle("display:none;");
+		#else
+		#	echo OnEvent::script("CustomerPage.saveKontodaten();");
 		
-		$IBemerkung = new HTMLInput("bemerkung", "textarea", $Beleg->A("textbausteinUnten"));
-		$IBemerkung->style("width:100%;height:100px;margin-top:40px;");
-		$IBemerkung->placeholder("Bemerkungen");
-		#$IBemerkung->onblur("");
-		$IBemerkung->onkeyup("if(CustomerPage.timeout != null) window.clearTimeout(CustomerPage.timeout); CustomerPage.timeout = window.setTimeout(CustomerPage.saveBemerkung, 300);");
-		
-		$TZahlungsart->addRow(array(new Button("Bemerkung", "document_alt_stroke", "iconic"), $IBemerkung));
-		$TZahlungsart->addCellStyle(1, "vertical-align:top;padding-top:40px;");
 		
 		
 		
@@ -218,7 +331,7 @@ class CCAuftrag extends CCPage implements iCustomContent {
 			$html .= $TSumme;
 		
 		if($this->showZahlungsart)
-			$html .= $TZahlungsart;
+			$html .= $TBemerkung.$TZahlungsart;
 		
 		$html .= $this->getBottom($Beleg);
 		
@@ -227,30 +340,74 @@ class CCAuftrag extends CCPage implements iCustomContent {
 		return $html.OnEvent::script("
 			CustomerPage.timeout = null;
 			CustomerPage.saveBemerkung  = function(){ CustomerPage.rme('setBemerkung', {GRLBMID: $data[GRLBMID], bemerkung: $('textarea[name=bemerkung]').val() }); };
+			CustomerPage.getBIC = function(){
+				CustomerPage.rme('getBIC', {
+					IBAN: $('input[name=IBAN]').val()
+				}, function(t){ $('#bankMessage').html(t); });
+			};
 			CustomerPage.saveKontodaten = function(){ CustomerPage.rme('setKontodaten', {
 				GRLBMID: $data[GRLBMID],
 				zahlungsart: $('select[name=zahlungsart]').val(),
-				kontonummer: $('input[name=kontonummer]').val(),
-				bankleitzahl: $('input[name=bankleitzahl]').val()
-			}, function(t){ $('#bankMessage').html(t); }); };");
+				IBAN: $('input[name=IBAN]').val(),
+				BIC: $('input[name=BIC]').val()
+			}, function(t){ $('#bankMessage').html(t); }); };
+				
+			$js");
 	}
 	
 	public function getBottom($Beleg){
-		return "";
+		if(!$this->showSignature)
+			return;
+		
+		$TA = new HTMLTable(1, "Unterschrift Auftragnehmer");
+		$TA->setTableStyle("width:100%;");
+		
+		$P = new Button("Unterschrift", "pen_alt2", "iconic");
+		$P->style("float:left;");
+		
+		$padAN = $P.'
+	<div class="sigPadAN" style="margin-left:30px;">
+		<canvas class="pad" width="300" height="150" style="border:1px solid grey;"></canvas>
+		<input type="hidden" id="sigAN" name="sigAN" class="output">
+		<br>
+		<span class="clearButton"><a href="#" onclick="return false;">Nochmal</a></span>
+	</div>';
+		
+		$TA->addRow(array($padAN));
+		
+		
+		$TK = new HTMLTable(1, "Unterschrift Kunde");
+		$TK->setTableStyle("width:100%;");
+		
+		$padKunde = $P.'
+	<div class="sigPadKunde" style="margin-left:30px;">
+		<canvas class="pad" width="300" height="150" style="border:1px solid grey;"></canvas>
+		<input type="hidden" id="sigKunde" name="sigKunde" class="output">
+		<br>
+		<span class="clearButton"><a href="#" onclick="return false;">Nochmal</a></span>
+	</div>';
+		
+		$TK->addRow(array($padKunde));
+		
+		$IID = new HTMLInput("GRLBMID", "hidden", $Beleg->getID());
+		
+		return "$IID<div style=\"width:49%;margin-right:1%;display:inline-block;vertical-align:top;\">$TA</div><div style=\"width:49%;display:inline-block;vertical-align:top;margin-right:1%;\">$TK</div>
+			".OnEvent::script("$('.sigPadAN').signaturePad({drawOnly:true, lineTop: 100}).regenerate(".$Beleg->A("GRLBMServiceSigAN").");
+				$('.sigPadKunde').signaturePad({drawOnly:true, lineTop: 100}).regenerate(".$Beleg->A("GRLBMServiceSigAG").");");
 	}
 	
 	public function getAdresse($Beleg){
 		$Auftrag = new Auftrag($Beleg->A("AuftragID"));
 		$Adresse = new Adresse($Auftrag->A("AdresseID"));
 		
-		$BCheckK = "";
-		if(Session::isPluginLoaded("mklickTel")){
-			$BCheckK = new Button("Adresse mit klickTel prüfen", "compass", "iconic");
-			$BCheckK->style("float:right;font-size:30px;margin-right:15px;");
-			$BCheckK->onclick("CustomerPage.popup('Adressprüfung', 'checkAddressKlickTel', {AdresseID: {$Adresse->getID()}, GRLBMID: $data[GRLBMID]}, {modal: true, width: 500, resizable: false, position: ['center', 40]});");
-			$BCheckK->id("BCheckKT");
-			Aspect::joinPoint("modButtonKlickTel", $this, __METHOD__, array($BCheckK, $Auftrag));
-		}
+		#$BCheckK = "";
+		#if(Session::isPluginLoaded("mklickTel")){
+		#	$BCheckK = new Button("Adresse mit klickTel prüfen", "compass", "iconic");
+		#	$BCheckK->style("float:right;font-size:30px;margin-right:15px;");
+		#	$BCheckK->onclick("CustomerPage.popup('Adressprüfung', 'checkAddressKlickTel', {AdresseID: {$Adresse->getID()}, GRLBMID: $data[GRLBMID]}, {modal: true, width: 500, resizable: false, position: ['center', 40]});");
+		#	$BCheckK->id("BCheckKT");
+		#	Aspect::joinPoint("modButtonKlickTel", $this, __METHOD__, array($BCheckK, $Auftrag));
+		#}
 		
 		$BUpdate = new Button("Adresse ändern", "pen_alt2", "iconic");
 		$BUpdate->style("float:right;font-size:30px;margin-right:15px;");
@@ -270,17 +427,43 @@ class CCAuftrag extends CCPage implements iCustomContent {
 		$TAdresse = new HTMLTable(2, "Kundenadresse");
 		$TAdresse->setColWidth(1, 26);
 		$TAdresse->setTableStyle("width:100%;");
-		$TAdresse->addRow(array(new Button("Adresse", "home", "iconic"), $BCheckG.$BCheckK.$BUpdate.$Adresse->getHTMLFormattedAddress()));
+		$TAdresse->addRow(array(new Button("Adresse", "home", "iconic"), $BCheckG.$BUpdate.$Adresse->getHTMLFormattedAddress()));
 		$TAdresse->setColStyle(1, "vertical-align:top;");
 		
 		return $TAdresse;
+	}
+	
+	public function getScriptFiles(){
+		$files = array();
+		if($this->showSignature)
+			$files[] = "./lib/jquery.signaturepad.min.js";
+		
+		return $files;
 	}
 	
 	public function getScript(){
 		return "var CCAuftrag = {
 			lastValue: null,
 			allowSave: false,
-			lastTextbausteinUnten: null
+			lastTextbausteinUnten: null,
+			
+			openBeleg: function(ID){
+				CustomerPage.rme('getAuftrag', {GRLBMID: ID}, function(transport){ 
+						if(transport == 'TIMEOUT') { document.location.reload(); return; } 
+						$('#contentLeft').html(transport); 
+					}, 
+					function(){},
+					'POST');
+					
+				CustomerPage.rme('getArtikel', {GRLBMID: ID, query : '', KategorieID: ''}, function(transport){ 
+						if(transport == 'TIMEOUT') { document.location.reload(); return; } 
+						$('#contentRight').html(transport); 
+						$('.selected').removeClass('selected');
+						$('#frameSelect').hide(); $('#frameEdit').show();
+					}, 
+					function(){},
+					'POST');
+			}
 		};";
 	}
 	
@@ -393,8 +576,19 @@ class CCAuftrag extends CCPage implements iCustomContent {
 		$TArtikel = new HTMLTable(4, "Artikel");
 		$TArtikel->setTableStyle("width:100%;");
 		$TArtikel->setColWidth(1, 26);
-		$TArtikel->setColWidth(2, 100);
+		$TArtikel->setColWidth(3, 100);
 		$TArtikel->setColStyle(4, "text-align:right;");
+		
+		
+		$I = new HTMLInput("addByBarcode", "text", $data["query"]);
+		$I->placeholder("Hinzufügen über Nummer");
+		$I->style("width:calc(100% - 30px);max-width:calc(100% - 30px);");
+		$I->onEnter("CustomerPage.rme('addArtikel', {code : this.value, GRLBMID: $data[GRLBMID]}, function(transport){ CustomerPage.rme('getAuftrag', {GRLBMID: $data[GRLBMID]}, function(transport){ $('#contentLeft').html(transport); }); \$('[name=addByBarcode]').val(''); });");
+		
+		$BQ = new Button("Suche", "target", "iconic");
+		$TArtikel->addRow(array($BQ, $I));
+		$TArtikel->addRowColspan(2, 3);
+		
 		
 		$BQ = "";
 		if($data["query"] != ""){
@@ -406,8 +600,8 @@ class CCAuftrag extends CCPage implements iCustomContent {
 		
 		
 		$I = new HTMLInput("query", "text", $data["query"]);
-		$I->placeholder("Suche nach Name, Nummer oder Beschreibung");
-		$I->style("width:90%;");
+		$I->placeholder("Liste filtern nach Name, Nummer oder Beschreibung");
+		$I->style("width:calc(100% - 30px);max-width:calc(100% - 30px);");
 		$I->onEnter("CustomerPage.rme('getArtikel', {KategorieID: '$data[KategorieID]', query : this.value, GRLBMID: $data[GRLBMID]}, function(transport){ $('#contentRight').html(transport); });");
 		
 		$BS = new Button("Los", "arrow_right", "iconic");
@@ -434,8 +628,8 @@ class CCAuftrag extends CCPage implements iCustomContent {
 			$A->resetParsers();
 			$TArtikel->addRow(array(
 				$B,
+				$A->A("name").($A->A("bemerkung") != "" ? "<br><small style=\"color:grey;\">".$A->A("bemerkung")."</small>" : ""),
 				$A->A("artikelnummer"), 
-				$A->A("name").($A->A("bemerkung") != "" ? "<br /><small style=\"color:grey;\">".$A->A("bemerkung")."</small>" : ""),
 				$this->showPrices ? Util::CLFormatCurrency($A->getGesamtBruttoVK() * 1, true)."<br /><small style=\"color:grey;\">".Util::CLFormatCurrency($A->getGesamtNettoVK() * 1, true)."</small>" : ""
 			));
 			$TArtikel->addRowClass("selectable");
@@ -631,8 +825,31 @@ class CCAuftrag extends CCPage implements iCustomContent {
 	}
 	
 	public function addArtikel($data){
-		$Beleg = new GRLBM($data["GRLBMID"]);
-		$Beleg->addArtikel($data["ArtikelID"]);
+		if(isset($data["code"])){
+			$ACA = anyC::get("Artikel");
+			if(substr($data["code"], 0, 3) == "ART"){
+				$ACA->addAssocV3("ArtikelID", "=", substr($data["code"], 3) - 10000);
+			} else {
+				$ACA->addAssocV3("artikelnummer", "=", "$data[code]", "AND", "1");
+				$ACA->addAssocV3("EAN", "=", "$data[code]", "OR", "1");
+				$ACA->addAssocV3("artikelnummerHersteller", "=", "$data[code]", "OR", "1");
+			}
+		
+			$A = $ACA->n();
+			if($ACA->numLoaded() == 1){
+				
+			} elseif($ACA->numLoaded() > 1) 
+				Red::errorD("Nummer nicht eindeutig!");
+			else
+				Red::errorD("Nummer nicht gefunden!");
+			
+			$data["ArtikelID"] = $A->getID();
+		}
+		#$Beleg = new GRLBM($data["GRLBMID"]);
+		#$Beleg->addArtikel($data["ArtikelID"]);
+		$p = new Posten(-1);
+		$p->increaseCount = $this->increaseCount;
+		$p->newFromArtikel($data["ArtikelID"], $data["GRLBMID"], 1);
 	}
 	
 	public function delPosten($data){
@@ -660,32 +877,47 @@ class CCAuftrag extends CCPage implements iCustomContent {
 		$P->saveMe();
 	}
 	
-	public function setKontodaten($data){
-		if($data["zahlungsart"] != "debit"){
-			$data["kontonummer"] = "";
-			$data["bankleitzahl"] = "";
-		}
-		
-		$GRLBM = new GRLBM($data["GRLBMID"]);
-		$GRLBM->changeA("GRLBMpayedVia", $data["zahlungsart"]);
-		$GRLBM->changeA("GRLBMKontonummer", $data["kontonummer"]);
-		$GRLBM->changeA("GRLBMBankleitzahl", $data["bankleitzahl"]);
-		$GRLBM->saveMe();
-		
-		if($data["bankleitzahl"] == "")
-			die("&nbsp;");
-		
-		$uri = "http://soapi.io/soap/blz";
+	public function getBIC($data){
+		$uri = "https://soapi.io/soap/blz";
 		
 		$Soap = new SoapClient(null, array(
 			"location" => $uri,
 			"uri" => $uri));
 		
-		$R = $Soap->requestBank($data["bankleitzahl"], $data["kontonummer"]);
+		$R = $Soap->requestBICByIBAN($data["IBAN"]);
 		
-		echo $data["bankleitzahl"].": ".$R["bankname"];
+		if($R["isValidBank"])
+			echo OnEvent::script("$('[name=BIC]').val('$R[BIC]'); $('#ktoCheck').removeClass('question_mark').removeClass('x_alt').addClass('check').css('color', 'green');");
+		else
+			echo OnEvent::script("$('[name=BIC]').val('');$('#ktoCheck').removeClass('question_mark').removeClass('check').addClass('x_alt').css('color', 'red');");
+	}
+	
+	public function setKontodaten($data){
+		if($data["zahlungsart"] != "debit"){
+			$data["IBAN"] = "";
+			$data["BIC"] = "";
+		}
 		
-		if($R["isValidKontonummer"])
+		$GRLBM = new GRLBM($data["GRLBMID"]);
+		$GRLBM->changeA("GRLBMpayedVia", $data["zahlungsart"]);
+		#$GRLBM->changeA("GRLBMKontonummer", $data["kontonummer"]);
+		#$GRLBM->changeA("GRLBMBankleitzahl", $data["bankleitzahl"]);
+		$GRLBM->saveMe();
+		
+		if($data["BIC"] == "")
+			die("&nbsp;");
+		
+		$uri = "https://soapi.io/soap/blz";
+		
+		$Soap = new SoapClient(null, array(
+			"location" => $uri,
+			"uri" => $uri));
+		
+		$R = $Soap->checkIBAN($data["IBAN"]);
+		var_dump($R);
+		#echo $data["bankleitzahl"].": ".$R["bankname"];
+		
+		if($R)
 			echo OnEvent::script("$('#ktoCheck').removeClass('question_mark').removeClass('x_alt').addClass('check').css('color', 'green');");
 		else
 			echo OnEvent::script("$('#ktoCheck').removeClass('question_mark').removeClass('check').addClass('x_alt').css('color', 'red');");
@@ -709,6 +941,26 @@ class CCAuftrag extends CCPage implements iCustomContent {
 		
 		return "<iframe src=\"index.php?CC=Lieferschein&M=getPDF&GRLBMID=$data[GRLBMID]&_=".rand(0, 99999999)."\" style=\"border:0px;height:500px;width:100%;\"></iframe>";
 	}
+	
+	public function sendViaEMail($data){
+		$Auftrag = new Auftrag($data["AuftragID"]);
+		$Auftrag->sendViaEmail($data["GRLBMID"]);
+	}
+	
+	/*public function getEMailViewer($data){
+		if(!$this->loggedIn)
+			return "TIMEOUT";
+		
+		
+		
+		$I = new HTMLInput("emailBody", "textarea", "<p>TEST</p>");
+		
+		return $I.OnEvent::script("\$j('[name=emailBody]').trumbowyg({
+			lang: 'de',
+			resetCss: true,
+			btns: [['undo', 'redo'], ['bold', 'italic', 'underline'], ['fullscreen', 'viewHTML']]
+		});"); #, 'removeformat'
+	}*/
 	
 	public function getPDF($data){
 		if(!$this->loggedIn)

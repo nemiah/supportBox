@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class mUserdataGUI extends mUserdata implements iGUIHTML2, icontextMenu {
 	function __construct() {
@@ -217,7 +217,7 @@ class mUserdataGUI extends mUserdata implements iGUIHTML2, icontextMenu {
 		if(!isset($bps["plugin"]) OR $bps["plugin"] == "0")
 			return;
 		
-		$pS = mUserdata::getPluginSpecificData($bps["plugin"], null, $UserID);
+		$pS = mUserdata::getPluginSpecificData($bps["plugin"], 0, $UserID);
 		
 		$T = new HTMLTable(2);
 		$T->useForSelection(false);
@@ -518,7 +518,7 @@ class mUserdataGUI extends mUserdata implements iGUIHTML2, icontextMenu {
 				$G = new Users();
 				$G->addAssocV3("isAdmin","=","0");
 				
-				$G->setLimitV3("10");
+				#$G->setLimitV3("10");
 				$G->lCV3();
 				while(($t = $G->getNextEntry())){
 					$T->addRow(array(new Button("", "./images/i2/copy.png", "icon"), $t->A("username")));
@@ -535,10 +535,10 @@ class mUserdataGUI extends mUserdata implements iGUIHTML2, icontextMenu {
 				$T->maxHeight(200);
 				
 				$apps = Applications::getList();
-				foreach($apps AS $app){
+				foreach($apps AS $label => $app){
 					#rme("mUserdata","-1","setUserdata",new Array("hidePlugin"+$('relabelPlugin').value.split(":")[0],$('relabelPlugin').value.split(":")[0], "pHide", lastLoadedLeft),"contentManager.reloadFrameLeft()");
 					
-					$T->addRow(array(new Button("", "./plugins/Userdata/login18.png", "icon"), "Kann sich nicht an '$app' anmelden"));
+					$T->addRow(array(new Button("", "./plugins/Userdata/login18.png", "icon"), "Kann sich nicht an '$label' anmelden"));
 					$T->addRowEvent("click", OnEvent::rme(new mUserdata(-1), "setUserdata", array("'loginTo$app'", "'0'", "'loginTo'", "lastLoadedLeft"), OnEvent::closeContext().OnEvent::reload("Left")));
 					#$T->addRowEvent("click", "copyFromOtherUser('".$t->getID()."');");
 				}

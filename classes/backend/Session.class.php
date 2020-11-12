@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class Session {
 	static $instance;
@@ -49,7 +49,7 @@ class Session {
 	}
 	
 	public static function reloadDBData() {
-		$_SESSION["DBData"] = $_SESSION[self::$sessionVariable]->getDBData();
+		$_SESSION["DBData"] = $_SESSION[self::$sessionVariable]->getDBData(null, $_SESSION["DBData"]["InstallationID"]);
 		
 		$DBWrite = Environment::getS("databaseDataWrite", null);
 		if($DBWrite !== null)
@@ -232,7 +232,7 @@ class Session {
 
 		if(!isset($_SESSION["CurrentAppPlugins"])) 
 			return false;
-		
+
 		return $_SESSION["CurrentAppPlugins"]->isPluginLoaded($pluginName);
 		#return in_array($pluginName,$_SESSION["CurrentAppPlugins"]->getAllPlugins());
 	}
@@ -290,10 +290,11 @@ class Session {
 		
 		$c = $this->getCurrentUser();
 		$d = array();
-		$d["loginUsername"] = $c->getA()->username;
-		$d["loginSHAPassword"] = $c->getA()->SHApassword;
-		$d["loginSprache"] = $c->getA()->language;
+		$d["loginUsername"] = $c->A("username");
+		$d["loginSHAPassword"] = $c->A("SHApassword");
+		$d["loginSprache"] = $c->A("language");
 		$d["anwendung"] = $application;
+		$d["loginMandant"] = $_SESSION["DBData"]["InstallationID"];
 		$U->doLogin($d);
 		ob_end_clean();
 	}

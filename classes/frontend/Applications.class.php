@@ -15,14 +15,15 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class Applications {
 	private $apps = array();
 	private $icons = array();
 	private $activeApp = "nil";
 	private $versions = array();
-
+	private $packages = array();
+	
 	private static $sessionVariable = "applications";
 
 	public static function init(){
@@ -55,18 +56,18 @@ class Applications {
 			sort($apps);
 				
 			$allowedApplications = Environment::getS("allowedApplications", null);
-
+			
 			foreach($apps as $key => $file){
 				
 				require Util::getRootPath()."applications/$file";
 				
 				$f = explode(".",$file);
-				if($f[0]{0} == "-") continue;
+				if($f[0][0] == "-") continue;
 				
 				$_SESSION["messages"]->startMessage("trying to register application $f[0]: ");
 				$f = $f[0];
 				$c = new $f;
-				if($allowedApplications != null AND !in_array($c->registerName(), $allowedApplications))
+				if($allowedApplications != null AND !in_array($c->registerName(), $allowedApplications) AND !in_array($c->registerFolder(), $allowedApplications))
 					continue;
 				
 				$this->apps[$c->registerName()] = $c->registerFolder();
@@ -76,6 +77,9 @@ class Applications {
 				
 				if(method_exists($c,"registerVersion"))
 					$this->versions[$c->registerName()] = $c->registerVersion();
+				
+				if(method_exists($c,"registerPackage"))
+					$this->packages[$c->registerName()] = $c->registerPackage();
 				
 				$_SESSION["messages"]->endMessage("loaded");
 				unset($c);
@@ -116,6 +120,13 @@ class Applications {
 		
 		return $_SESSION[self::$sessionVariable]->getActiveApplication();
 	}
+
+	public static function activeApplicationLabel(){
+		if(!isset($_SESSION[self::$sessionVariable]))
+			return null;
+		
+		return $_SESSION[self::$sessionVariable]->getActiveApplicationLabel();
+	}
 	
 	public static function activeVersion(){
 		return $_SESSION[self::$sessionVariable]->getRunningVersion();
@@ -137,6 +148,14 @@ class Applications {
 		return $this->activeApp;
 	}
 	
+	public function getActiveApplicationLabel(){
+		$package = "";
+		if(isset($this->packages[array_search($this->activeApp, $this->apps)]))
+			$package = $this->packages[array_search($this->activeApp, $this->apps)]." ";
+		
+		return $package.array_search($this->activeApp, $this->apps);
+	}
+	
 	public function getApplicationIcon($appName){
 		if(array_search($appName,$this->apps) !== false) $appName = array_search($appName,$this->apps);
 		return isset($this->icons[$appName]) ? $this->icons[$appName] : "";
@@ -151,8 +170,16 @@ class Applications {
 	}
 	
 	public function getHTMLOptions($selected = null){
+		if($selected == null)
+			$selected = "open3A";
+		
+		$apps = $this->apps;
+		$apps = array_flip($apps);
+		natcasesort($apps);
+		$apps = array_flip($apps);
+		
 		$o = "";
-		foreach($this->apps as $key => $value)
+		foreach($apps as $key => $value)
 			$o .= "<option ".(($selected != null AND $selected == $value) ? "selected=\"selected\"" : "")." value=\"$value\">$key</option>";
 		return $o;
 	}

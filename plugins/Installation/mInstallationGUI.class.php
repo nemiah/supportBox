@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 
@@ -217,7 +217,7 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 		}
 		catch (NoDBUserDataException $e) { 
 			if(BPS::getProperty("mInstallationGUI", "showErrorText", false)){
-				$t->addRow(isset($text["wrongData"]) ? $text["wrongData"] : "Mit den angegebenen Datenbank-Zugangsdaten kann keine Verbindung aufgebaut werden.<br /><br />Wenn sie korrekt sind, werden hier weitere Möglichkeiten angezeigt angezeigt.");
+				$t->addRow("Mit den angegebenen Datenbank-Zugangsdaten kann keine Verbindung aufgebaut werden.<br><br>Wenn sie korrekt sind, werden hier weitere Möglichkeiten angezeigt angezeigt.");
 				$t->addRowClass("backgroundColor0");
 				$t->addRowStyle("color:red;");
 			}
@@ -242,7 +242,7 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 					$BReload->style("float:right;margin:10px;");
 					
 					if(!$File->A("FileIsWritable"))
-						$BR = "Bitte machen Sie die Datei /system/connect.php für den Webserver beschreibbar, damit phynx auf die ältere Verbindungsart umstellen kann.<br /><br />Verwenden Sie dazu Ihr FTP-Programm. Klicken Sie mit der rechten Maustaste auf die Datei auf dem Server, wählen Sie \"Eigenschaften\", und geben Sie den Modus 666 an, damit sie durch den Besitzer, die Gruppe und alle Anderen les- und schreibbar ist.$BReload";
+						$BR = "Bitte machen Sie die Datei /system/connect.php für den Webserver beschreibbar, damit open3A auf die ältere Verbindungsart umstellen kann.<br /><br />Verwenden Sie dazu Ihr FTP-Programm. Klicken Sie mit der rechten Maustaste auf die Datei auf dem Server, wählen Sie \"Eigenschaften\", und geben Sie den Modus 666 an, damit sie durch den Besitzer, die Gruppe und alle Anderen les- und schreibbar ist.$BReload";
 					$t->addRow(array("$B <b>Möglicherweise ist die MySQLi-Erweiterung auf Ihrem Server nicht korrekt konfiguriert.</b><br /><br />$BR"));
 					$t->addRowClass("backgroundColor0");
 					
@@ -393,9 +393,9 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 			}
 			
 		} catch (NoDBUserDataException $e) {
-			$message = "<p style=\"padding:10px;font-size:20px;color:#555;text-align:center;color:red;\">Mit den angegebenen Datenbank-Zugangsdaten kann keine Verbindung aufgebaut werden.</p>";
+			$message = "<p style=\"padding:10px;font-size:20px;color:#555;text-align:center;color:red;\">Mit den angegebenen Datenbank-Zugangsdaten kann keine Verbindung aufgebaut werden.<br><small style=\"color:grey;\">".$e->getMessage()."</small></p>";
 			
-			echo OnEvent::script("contentManager.loadFrame('contentLeft','Installation','1');");
+			echo OnEvent::script("contentManager.loadFrame('contentLeft','Installation','".(isset($_SESSION["DBData"]) ? $_SESSION["DBData"]["InstallationID"] : 1)."');");
 			
 			if(PHYNX_MAIN_STORAGE == "MySQL") {
 				try {
@@ -429,7 +429,7 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 					$B->id("recheckButton");
 					
 					if(!$File->A("FileIsWritable"))
-						$BR = "<p style=\"margin-top:20px;\">Bitte machen Sie die Datei /system/connect.php für den Webserver beschreibbar, damit phynx auf die ältere Verbindungsart umstellen kann.<br /><br />Verwenden Sie dazu Ihr FTP-Programm. Klicken Sie mit der rechten Maustaste auf die Datei auf dem Server, wählen Sie \"Eigenschaften\", und geben Sie den Modus 666 an, damit sie durch den Besitzer, die Gruppe und alle Anderen les- und schreibbar ist.
+						$BR = "<p style=\"margin-top:20px;\">Bitte machen Sie die Datei /system/connect.php für den Webserver beschreibbar, damit open3A auf die ältere Verbindungsart umstellen kann.<br /><br />Verwenden Sie dazu Ihr FTP-Programm. Klicken Sie mit der rechten Maustaste auf die Datei auf dem Server, wählen Sie \"Eigenschaften\", und geben Sie den Modus 666 an, damit sie durch den Besitzer, die Gruppe und alle Anderen les- und schreibbar ist.
 							</p><div style=\"width:350px;margin:auto;padding-top:20px;padding-bottom:20px;\">".$this->box($B, $A, "Erneut<br />prüfen")."</div>";
 
 					
@@ -444,7 +444,7 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 		catch (DatabaseNotFoundException $e) {
 			$message = "<p style=\"padding:10px;font-size:20px;color:#555;text-align:center;color:red;\">Die angegebene Datenbank konnte nicht gefunden werden.</p>";
 			
-			echo OnEvent::script("contentManager.loadFrame('contentLeft','Installation','1');");
+			echo OnEvent::script("contentManager.loadFrame('contentLeft', 'Installation','".(isset($_SESSION["DBData"]) ? $_SESSION["DBData"]["InstallationID"] : 1)."');");
 		}
 		catch (TableDoesNotExistException $e){
 			$message = OnEvent::script("\$j('.installHiddenTab').hide();")."<p style=\"padding:10px;font-size:20px;color:#555;margin-bottom:40px;text-align:center;\">Ihre Datenbank hat derzeit noch keinen Inhalt.</p>";
@@ -526,11 +526,11 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 		} catch(Exception $e){
 			die("<p style=\"padding:5px;color:red;\">Fehler beim Übergeben der E-Mail. ".$e->getMessage()."</p>");
 		}
-		$mail->setFrom("phynx Mailtest <".$mailfrom.">");
+		$mail->setFrom("open3A Mailtest <".$mailfrom.">");
 		if(!ini_get('safe_mode')) $mail->setReturnPath($mailfrom);
-		$mail->setSubject("phynx Mailtest");
+		$mail->setSubject("open3A Mailtest");
 
-		$mail->setText(wordwrap("Diese Nachricht wurde vom phynx Mailtester erzeugt. Ihre E-Mail-Einstellungen sind korrekt.", 80));
+		$mail->setText(wordwrap("Diese Nachricht wurde vom open3A Mailtester erzeugt. Ihre E-Mail-Einstellungen sind korrekt.", 80));
 		$adressen = array();
 		$adressen[] = $mailto;
 		if($mail->send($adressen)){
@@ -587,16 +587,16 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 		if(Applications::activeApplication() == "supportBox"){
 			$action = "contentManager.loadPlugin('contentRight', 'mSBInfo');";
 
-			$B = new Button("Die supportBox konfigurieren", "./plugins/Installation/changedb.png", "icon");
+			$B = new Button("Die supportBox konfigurieren", "./plugins/Installation/benutzer.png", "icon");
 			$B->onclick($action);
 
 			$html = $this->box($B, $action, "Die supportBox<br>konfigurieren");
 		} else {
-			$action = "contentManager.loadPlugin('contentRight', 'Users'); contentManager.newClassButton('User',  function(transport){ }, 'contentLeft', 'UserGUI;edit:ok');";
-
-			$B = new Button("Benutzer anlegen", "./plugins/Installation/benutzer.png", "icon");
-			$B->onclick($action);
-
+		$action = "contentManager.loadPlugin('contentRight', 'Users'); contentManager.newClassButton('User',  function(transport){ }, 'contentLeft', 'UserGUI;edit:ok');";
+		
+		$B = new Button("Benutzer anlegen", "./plugins/Installation/benutzer.png", "icon");
+		$B->onclick($action);
+		
 			$html = $this->box($B, $action, "Einen Benutzer<br>anlegen");
 		}
 		
@@ -607,7 +607,7 @@ class mInstallationGUI extends mInstallation implements iGUIHTML2 {
 		set_time_limit(0);
 		
 		try {
-			$C = new Customizer();
+			$C = new Customizer(-1);
 			Customizer::updates("CustomizerPakete");
 		} catch (Exception $ex) { }
 		

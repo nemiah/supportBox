@@ -15,23 +15,23 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 
-if(!function_exists("hash_equals")){
+if(!function_exists("random_int")){
 	require_once "./system/basics.php";
 	
-	emoFatalError("I'm sorry, but your PHP version is too old.", "You need at least PHP version 5.6.0 to run this program.<br />You are using ".phpversion().". Please talk to your provider about this.", "phynx");
+	emoFatalError("I'm sorry, but your PHP version is too old.", "You need at least PHP version 7.0 to run this program.<br>You are using ".phpversion().". Please talk to your provider about this.", "open3A");
 }
 
 $scripts = array(
-	"./libraries/jquery/jquery-1.9.1.min.js",
-	"./libraries/jquery/jquery-ui-1.10.1.custom.min.js",
+	"./libraries/jquery/jquery-3.3.1.min.js",
+	"./libraries/jquery/jquery-ui-1.12.1.custom.min.js",
 	"./libraries/jquery/jquery.json-2.3.min.js",
 	"./libraries/jquery/jquery.timers.js",
 	"./libraries/jquery/jquery.qtip.min.js",
 	"./libraries/jquery/jquery.scrollTo-1.4.2-min.js",
-	"./libraries/jquery/jquery.hammer.js",
+	#"./libraries/jquery/jquery.hammer.js",
 	"./libraries/jstorage.js",
 	"./libraries/webtoolkit.base64.js",
 	"./libraries/webtoolkit.sha1.js",
@@ -45,6 +45,9 @@ $scripts = array(
 	"./libraries/snap.svg/snap.svg-min.js",
 	"./libraries/touchy/Touchy.js",
 	"./libraries/iconic/iconic.min.js");
+
+if(file_exists(__DIR__."/plugins/WebAuth/WebAuth.js"))
+	$scripts[] = "./plugins/WebAuth/WebAuth.js";
 
 foreach($scripts AS $url)
 	header("Link: <$url>; rel=preload; as=script", false);
@@ -95,7 +98,7 @@ T::load(Util::getRootPath()."libraries");
 /*
 $E = new Environment();
 */
-$cssColorsDir = Environment::getS("cssColorsDir", (isset($_COOKIE["phynx_color"]) ? $_COOKIE["phynx_color"] : "standard"));
+$cssColorsDir = Environment::getS("cssColorsDir", "standard");
 $cssCustomFiles = Environment::getS("cssCustomFiles", null);
 /*
 if(file_exists(Util::getRootPath()."plugins/Cloud/Cloud.class.php")){
@@ -154,12 +157,13 @@ if($_SESSION["S"]->checkIfUserLoggedIn() == false)
 	$_SESSION["CurrentAppPlugins"]->scanPlugins();
 
 $updateTitle = true;
-$title = Environment::getS("renameFramework", "phynx by Furtmeier Hard- und Software");
+$title = Environment::getS("renameFramework", "open3A");
 if(isset($_GET["title"]) AND preg_match("/[a-zA-Z0-9 _-]*/", $_GET["title"])){
 	$title = $_GET["title"];
 	$updateTitle = false;
 }
-$favico = "./images/FHSFavicon.ico";
+
+$favico = Environment::getS("alterFavicon", "./images/FHSFavicon.ico");
 $sephy = Session::physion();
 if($sephy AND isset($sephy[3]) AND $sephy[3])
 		$favico = $sephy[3];
@@ -257,15 +261,19 @@ try {
 		require_once Util::getRootPath()."ubiquitous/Hintergrundbilder/Hintergrundbild.class.php";
 
 		$HG = Hintergrundbild::find();
-		if($HG){
+		if($HG)
 			$backgroundStyle = "background-image: url(".$HG->A("HintergrundbildImageURL").");background-size: cover;background-position: bottom center;background-repeat: no-repeat;";
-			$background = "";
-		}
+		
 	}
 } catch (Exception $ex) {
 
 }
-$CH = Util::getCloudHost();
+
+$backgroundStyle = Environment::getS("alterBackground", $backgroundStyle);
+if($backgroundStyle != "")
+	$background = "";
+
+/*$CH = Util::getCloudHost();
 $mandanten = array();
 if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH == null OR get_class($CH) == "CloudHostAny")){
 	$selected = false;
@@ -281,7 +289,15 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 		
 		$mandanten[$I->getID()] = $I->A("httpHost");
 	}
-}
+}*/
+$selected = false;
+require_once Util::getRootPath()."plugins/Installation/Installation.class.php"; //required for cloud! Installation-Plugin usually not enabled
+require_once Util::getRootPath()."plugins/Installation/mInstallation.class.php"; //required for cloud! Installation-Plugin usually not enabled
+$mandanten = Installation::getMandanten();
+foreach($mandanten AS $ID => $host)
+	if($host == $_SERVER["HTTP_HOST"])
+		$selected = $ID;
+
 
 ?><!DOCTYPE html>
 <html>
@@ -356,7 +372,7 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 		</script>
 		<?php if(!file_exists(dirname(__FILE__)."/styles/standard/merge.css")){ ?>
 		
-		<link rel="stylesheet" type="text/css" href="./libraries/jquery/jquery-ui-1.10.1.custom.css" />
+		<link rel="stylesheet" type="text/css" href="./libraries/jquery/jquery-ui-1.12.1.custom.css" />
 		<link rel="stylesheet" type="text/css" href="./libraries/jquery/jquery.qtip.min.css" />
 		<link rel="stylesheet" type="text/css" href="./libraries/touchy/Touchy.css" />
 		<link rel="stylesheet" type="text/css" href="./styles/standard/overlayBox.css" />
@@ -371,9 +387,9 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 		} else
 			echo "<link rel=\"stylesheet\" type=\"text/css\" href=\"./styles/standard/merge.css\" />";
 		
-		if($cssColorsDir != "standard") 
+		#if($cssColorsDir != "standard") 
 			echo '
-		<link rel="stylesheet" type="text/css" href="./styles/'.$cssColorsDir.'/colors.css" />';
+		<link rel="stylesheet" id="interfaceColors" type="text/css" href="./styles/'.$cssColorsDir.'/colors.css" />';
 		
 		if($cssCustomFiles != null){
 			foreach (explode("\n", $cssCustomFiles) AS $cssFile)
@@ -381,17 +397,17 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 		<link rel="stylesheet" type="text/css" href="'.$cssFile.'" />';
 		}
 		
-		if((isset($_COOKIE["phynx_layout"]) AND $_COOKIE["phynx_layout"] == "vertical"))
+		#if((isset($_COOKIE["phynx_layout"]) AND $_COOKIE["phynx_layout"] == "vertical"))
 			echo '
-		<link rel="stylesheet" type="text/css" href="./styles/standard/vertical.css" />';
+		<link rel="stylesheet" id="interfaceLayout" type="text/css" href="./styles/standard/horizontal.css" />';
 		
-		if((isset($_COOKIE["phynx_layout"]) AND $_COOKIE["phynx_layout"] == "desktop"))
-			echo '
-		<link rel="stylesheet" type="text/css" href="./styles/standard/desktop.css" />';
+		#if((isset($_COOKIE["phynx_layout"]) AND $_COOKIE["phynx_layout"] == "desktop"))
+		#	echo '
+		#<link rel="stylesheet" type="text/css" href="./styles/standard/desktop.css" />';
 		
-		if((isset($_COOKIE["phynx_layout"]) AND $_COOKIE["phynx_layout"] == "fixed"))
-			echo '
-		<link rel="stylesheet" type="text/css" href="./styles/standard/fixed.css" />';
+		#if((isset($_COOKIE["phynx_layout"]) AND $_COOKIE["phynx_layout"] == "fixed"))
+		#	echo '
+		#<link rel="stylesheet" type="text/css" href="./styles/standard/fixed.css" />';
 		
 			echo '
 		<link rel="stylesheet" type="text/css" href="./styles/standard/mobile.css" />';
@@ -402,11 +418,20 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 		<!--<div style="position:fixed;top:0px;left:0px;width:20px;" id="growlContainer"></div>-->
 		<div id="boxInOverlay" style="display: none;" class="backgroundColor0 borderColor1">
 
-			<?php
-			echo Environment::getS("contentLoginTop", "");
 			
-			if(Environment::getS("showCopyright", "1") == "1") { ?>
-			<p style="color:grey;left:10px;position:fixed;bottom:10px;"><a style="color:grey;" target="_blank" href="http://www.furtmeier.it"><?php echo T::_("Unternehmenssoftware"); ?></a> <?php echo T::_("von Furtmeier Hard- und Software"); ?></p>
+			<?php
+			echo Environment::getS("contentLoginTop", "<img class=\"loginLogo\" src=\"./images/open3ALogin.svg\" />");
+			?>
+			
+		
+			<div style="display:block;padding:10px;margin-bottom:10px;" id="messageSetup" class="highlight">
+				<p class="prettySubtitle" style="margin:0;padding:0;margin-bottom:10px;">Ersteinrichtung</p>
+				<?php echo T::_("Bitte verwenden Sie '<b>Admin</b>' als Benutzername und als Passwort, um mit der Ersteinrichtung dieser Anwendung fortzufahren."); ?>
+			</div>
+			
+			<?php
+			if(Environment::getS("showBacklink", "1") == "1") { ?>
+			<p style="color:grey;left:10px;position:fixed;bottom:10px;"><a style="color:grey;" target="_blank" href="https://www.open3A.de"><?php echo T::_("Unternehmenssoftware"); ?></a> <?php echo T::_("von der open3A GmbH"); ?></p>
 			<?php } ?>
 			<form id="loginForm" onsubmit="return false;">
 				<table class="loginWindow" style="border-spacing: 0 0px;">
@@ -538,7 +563,10 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 							</td>
 					</tr>
 					<tr>
-						<td colspan="2" style="background-color:#EEE;">
+						<td>&nbsp;</td>
+					</tr>
+					<tr>
+						<td colspan="2" class="loginAction">
 							<input
 								class="bigButton"
 								type="button"
@@ -578,10 +606,10 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 							<input type="hidden" value="1" name="loginPWEncrypted" id="loginPWEncrypted" />
 						</td>
 					</tr>
-					<?php if(strstr($_SERVER["SCRIPT_FILENAME"],"demo") OR $validUntil != null) { ?>
+					<?php if($validUntil != null) { ?>
 						<tr>
 							<td colspan="2">
-								<?php echo ($validUntil != null ? "Bitte beachten Sie: Diese Version läuft noch bis ".date("d.m.Y", $validUntil) : "Für den Demo-Zugang verwenden Sie bitte Max//Max oder Admin//Admin"); ?>
+								<?php echo "Bitte beachten Sie: Diese Version läuft noch bis ".date("d.m.Y", $validUntil); ?>
 							</td>
 						</tr>
 					<?php } ?>
@@ -630,19 +658,30 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 				<img
 					class="mouseoverFade"
 					src="./plugins/Users/certificateLogin.png"
-					style="margin-top:15px;margin-right:10px;"
+					style="margin-top:35px;margin-right:10px;cursor:pointer;"
 					onclick="userControl.doCertificateLogin();"
 					id="buttonCertificateLogin"
 					title="<?php echo T::_("Mit Zertifikat anmelden");?>"
 					alt="<?php echo T::_("Mit Zertifikat anmelden");?>"/>
+				<?php } ?>
+				
+				<?php if(extension_loaded("openssl") AND file_exists(__DIR__."/plugins/WebAuth/WebAuth.class.php") AND Environment::getS("showWebAuthLoginButton", "1") == "1") { ?>
+				<img
+					class="mouseoverFade"
+					src="./plugins/WebAuth/webauthLogin.png"
+					style="margin-top:35px;margin-right:10px;cursor:pointer;"
+					onclick="userControl.doWebAuthLogin();"
+					id="buttonWebAuthLogin"
+					title="<?php echo T::_("Per WebAuth anmelden");?>"
+					alt="<?php echo T::_("Per WebAuth anmelden");?>"/>
 				<?php } ?>
 			</div>
 		</div>
 		
 		<div id="lightOverlay" style="display: none;<?php echo $backgroundStyle; ?>" class="backgroundColor0">
 			<?php 
-				if($background != "")
-					echo '<img src="./images/html5.png" style="position:fixed;bottom:20px;right:20px;" alt="HTML5" title="HTML5" />';
+				#if($background != "")
+				#	echo '<img src="./images/html5.png" style="position:fixed;bottom:20px;right:20px;" alt="HTML5" title="HTML5" />';
 				
 				echo $background;
 			?>
@@ -652,50 +691,29 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 		<div id="container" style="display:none;">
 			<div id="messenger" style="display:none;" class="backgroundColor3 borderColor1"></div>
 			<div id="navigation"></div>
-			<?php if(isset($_COOKIE["phynx_layout"]) AND $_COOKIE["phynx_layout"] == "desktop"){ ?>
-				<div id="desktopWrapper">
-					<div id="wrapperHandler" class=""></div>
-					<div id="wrapper">
-						<div id="contentScreen"></div>
-						<div id="wrapperTable" style="display:none;"></div><!-- Remove some time -->
-						<div id="wrapperTableTd2">
-							<div id="contentRight"></div>
-						</div>
-						<div id="wrapperTableTd3">
-							<div id="contentCenter"></div>
-						</div>
-						<div id="wrapperTableTd1">
-							<div id="contentLeft">
-								<p><?php echo T::_("Sie haben JavaScript nicht aktiviert."); ?><br />
-								<?php echo T::_("Bitte aktivieren Sie JavaScript, damit diese Anwendung funktioniert."); ?></p>
-							</div>
-						</div>
-						<div style="clear:both;"></div>
-						
-						<div id="contentBelow" style="display:none;"><div id="contentBelowContent"></div></div>
-					</div>
-				</div>
-			<?php } else { ?>
+			<div id="desktopWrapper">
+				<div id="wrapperHandler" class=""></div>
 				<div id="wrapper">
 					<div id="contentScreen"></div>
-						<div id="wrapperTable" style="display:none;"></div><!-- Remove some time -->
-						<div id="wrapperTableTd2">
-							<div id="contentRight"></div>
+					<div id="wrapperTableTd2">
+						<div id="contentRight"></div>
+					</div>
+					<div id="wrapperTableTd3">
+						<div id="contentCenter"></div>
+					</div>
+					<div id="wrapperTableTd1">
+						<div id="contentLeft">
+							<p><?php echo T::_("Sie haben JavaScript nicht aktiviert."); ?><br />
+							<?php echo T::_("Bitte aktivieren Sie JavaScript, damit diese Anwendung funktioniert."); ?></p>
 						</div>
-						<div id="wrapperTableTd3">
-							<div id="contentCenter"></div>
-						</div>
-						<div id="wrapperTableTd1">
-							<div id="contentLeft">
-								<p><?php echo T::_("Sie haben JavaScript nicht aktiviert."); ?><br />
-								<?php echo T::_("Bitte aktivieren Sie JavaScript, damit diese Anwendung funktioniert."); ?></p>
-							</div>
-						</div>
-						<div style="clear:both;"></div>
-						
-					<div id="contentBelow" style="display:none;"><div id="contentBelowContent"></div></div>
+					</div>
+					<div style="clear:both;"></div>
+
+					<div id="contentBelow" style="display:none;">
+						<div id="contentBelowContent"></div>
+					</div>
 				</div>
-			<?php } ?>
+			</div>
 			<div id="windows"></div>
 			<div id="windowsPersistent"></div>
 			<div id="stash"></div>
@@ -723,12 +741,12 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 					<?php
 					
 					if(Environment::getS("showLayoutButton", "1") == "1"){ ?>
-						<span
+						<!--<span
 							style="cursor:pointer;float:right;margin-left:15px;margin-right:5px;"
 							class="iconic iconicL wrench"
-							title="Layout"
-							onclick="phynxContextMenu.start(this, 'Colors','1','Einstellungen:','left', 'up');"></span>
-					
+							title="Willkommen"
+							onclick="contentManager.loadPlugin('contentScreen', 'Colors');/*phynxContextMenu.start(this, 'Colors','1','Einstellungen:','left', 'up');*/"></span>
+							-->
 						<!--<img
 							onclick="phynxContextMenu.start(this, 'Colors','1','Einstellungen:','left', 'up');"
 							style="float:right;margin-left:8px;margin-right:5px;"
@@ -738,12 +756,12 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 							src="./images/navi/office.png" />-->
 					<?php }
 				
-					if(Environment::getS("showHelpButton", "1") == "1"){ ?>
+					/*if(Environment::getS("showHelpButton", "1") == "1"){ ?>
 						<span
 							style="cursor:pointer;float:right;margin-left:15px;margin-right:5px;"
 							class="iconic iconicL comment_alt2_stroke"
-							title="Hilfe"
-							onclick="window.open('http://www.phynx.de/support');"></span>
+							title="Willkommen"
+							onclick="contentManager.loadPlugin('contentScreen', 'Colors');"></span>
 						<!--<img
 							onclick="window.open('http://www.phynx.de/support');"
 							style="float:right;margin-left:8px;margin-right:5px;"
@@ -751,7 +769,7 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 							title="Hilfe"
 							alt="Hilfe"
 							src="./images/navi/hilfe.png" />-->
-					<?php }
+					<?php }*/
 						
 					if(Environment::getS("showDashboardButton", "1") == "1"){ ?>
 						<span
@@ -792,7 +810,7 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 							alt="Desktop"><xsl:attribute name="src"><xsl:value-of select="iconDesktop" /></xsl:attribute></img>
 					</xsl:if>-->
 					<?php if(Environment::getS("showCopyright", "1") == "1")
-						echo Environment::getS("contentCopyright", 'Copyright (C) 2007 - 2018 by <a href="http://www.Furtmeier.IT">Furtmeier Hard- und Software</a>. This program comes with ABSOLUTELY NO WARRANTY;<br>this is free software, and you are welcome to redistribute it under certain conditions; see <a href="gpl.txt">gpl.txt</a> for details.<!--<br />Thanks to the authors of the libraries and icons used by this program. <a href="javascript:contentManager.loadFrame(\'contentRight\',\'Credits\');">View credits.</a>-->');
+						echo Environment::getS("contentCopyright", 'Copyright (C) 2007 - 2020 by <a href="https://www.open3A.de">open3A GmbH</a>. This program comes with ABSOLUTELY NO WARRANTY;<br>this is free software, and you are welcome to redistribute it under certain conditions; see <a href="agpl.txt">agpl.txt</a> for details.<!--<br />Thanks to the authors of the libraries and icons used by this program. <a href="javascript:contentManager.loadFrame(\'contentRight\',\'Credits\');">View credits.</a>-->');
 					?>
 				</p>
 			</div>
@@ -800,6 +818,21 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 		<script type="text/javascript">
 			$j(document).ready(function() {
 				Ajax.physion = '<?php echo $physion; ?>';
+				if ('BroadcastChannel' in self) {
+					Interface.BroadcastChannel = new BroadcastChannel('open3A_'+Ajax.physion);
+
+					Interface.BroadcastChannel.onmessage = function(event) {
+						if(event.data == "logout")
+							userControl.doLogout("", false);
+
+						if(event.data == "login")
+							userControl.loadApplication();
+
+						if(Ajax.physion == "default" && event.data == "appSwitch")
+							contentManager.switchApplication(false);
+					};
+				}
+				
 				<?php $build = Phynx::build(); if($build) echo "Ajax.build = '$build';\n"; ?>
 				$j(document).keydown(function(evt){
 					if(evt.keyCode == 27){
@@ -839,7 +872,7 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 				contentManager.updateTitle = false;";
 				
 
-				echo "contentManager.init('".(isset($_COOKIE["phynx_layout"]) ? $_COOKIE["phynx_layout"] : "horizontal")."');";
+				echo "contentManager.init();";
 				
 				?>
 				
@@ -853,6 +886,9 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 					if(Environment::getS("showApplicationsList", "1") == "0" OR count($_SESSION["applications"]->getApplicationsList()) <= 1)
 						echo "\$j('#loginOptions, #altLogins').hide();"
 				?>
+
+				if($j.jStorage.get('phynxUserCert', null) != null && $j('#buttonCertificateLogin').length > 0)
+					$j('#altLogins').show();
 				/*setTimeout(function(){
 					if($j.jStorage.get('phynxUserCert', null) == null && $j('#buttonCertificateLogin').length > 0)
 						$j('#buttonCertificateLogin').css('opacity', '0.2');
@@ -863,16 +899,12 @@ if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH =
 
 		</script>
 		
-		<div style="display:none;" id="messageSetup" title="Ersteinrichtung">
-			<?php echo T::_("Bitte verwenden Sie '<b>Admin</b>' als Benutzername und als Passwort, um mit der Ersteinrichtung dieser Anwendung fortzufahren."); ?>
-		</div>
-		
 		<div style="display:none;" id="messageTouch" title="Touch-Eingabe">
 			<?php echo T::_("Ihr Gerät unterstützt Touch-Eingaben. Möchten Sie die Touch-Optimierungen aktivieren? Maus-Eingaben werden dann nicht mehr funktionieren.<br /><br />Wenn Sie 'Ja' auswählen, wird die Anwendung neu geladen. Sie können diese Auswahl mit dem %1-Knopf rechts unten rückgängig machen.", "<span class=\"iconic iconicG cursor\"></span>"); ?>
 		</div>
 		
-		<div style="display:none;" id="messageTouchReset" title="Touch-Eingabe">
+		<!--<div style="display:none;" id="messageTouchReset" title="Touch-Eingabe">
 			<?php echo T::_("Möchten Sie die Eingabemethode zurücksetzen? Sie werden dann erneut gefragt, ob Sie die Touch-Optimierungen nutzen möchten.<br /><br />Wenn Sie 'Ja' auswählen, wird die Anwendung neu geladen."); ?>
-		</div>
+		</div>-->
 	</body>
 </html>

@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 
 class HTMLGUI implements icontextMenu {
@@ -26,6 +26,7 @@ class HTMLGUI implements icontextMenu {
 	protected $labels = array();
 	private $labelDescriptions = array();
 	private $fieldDescriptions = array();
+	private $fieldDescriptionsReplacement1 = array();
 	
 	protected $values = array();
 	protected $options = array();
@@ -95,7 +96,7 @@ class HTMLGUI implements icontextMenu {
 	private $classParentName;
 	#private $infoDropDown = array();
 	
-	protected $languageClass;
+	#protected $languageClass;
 	protected $texts;
 	
 	private $RowIDPrefix = "BrowserMain";
@@ -246,7 +247,7 @@ class HTMLGUI implements icontextMenu {
 	}
 	
 	function __construct(){
-		$this->languageClass = $this->loadLanguageClass("HTML");
+		#$this->languageClass = $this->loadLanguageClass("HTML");
 	}
 
 	/**
@@ -273,7 +274,7 @@ class HTMLGUI implements icontextMenu {
 	 * @param string $class
 	 * @return unknown_type
 	 */
-	function loadLanguageClass($class){
+	/*7function loadLanguageClass($class){
 		try {
 			$n = $class."_".$_SESSION["S"]->getUserLanguage();
 			$c = new $n();
@@ -286,7 +287,7 @@ class HTMLGUI implements icontextMenu {
 			}
 		}
 		return $c;
-	}
+	}*/
 	
 	function setRowIDPrefix($prefix){
 		$this->RowIDPrefix = $prefix."Browser";
@@ -378,6 +379,7 @@ class HTMLGUI implements icontextMenu {
 	 * @param string $a
 	 */
 	function hideAttribute($a){ $this->dontShow[$a] = 1; }
+	function unhideAttribute($a){ if(isset($this->dontShow[$a])) unset($this->dontShow[$a]); }
 	
 	function isQuickSearchable($plugin){
 		$this->quickSearchPlugin = $plugin;
@@ -398,8 +400,9 @@ class HTMLGUI implements icontextMenu {
 		$this->labelDescriptions[$attributeName] = $description;
 	}
 	
-	function setFieldDescription($attributeName,$description) {
+	function setFieldDescription($attributeName,$description, $replacement1 = null) {
 		$this->fieldDescriptions[$attributeName] = $description;
+		$this->fieldDescriptionsReplacement1[$attributeName] = $replacement1;
 	}
 	
 	/**
@@ -870,10 +873,10 @@ class HTMLGUI implements icontextMenu {
 	function getOperationsHTML($pluginName, $id = -1){
 		$userCanDelete = mUserdata::isDisallowedTo("cantDelete".$pluginName);
 		$userCanCreate = mUserdata::isDisallowedTo("cantCreate".$pluginName);
-		if($this->texts == null) {
-			$c = $this->loadLanguageClass("HTML");
-			$this->texts = $c->getEditTexts();
-		}
+		#if($this->texts == null) {
+			#$c = $this->loadLanguageClass("HTML");
+			#$this->texts = $c->getEditTexts();
+		#}
 
 		$html = "";
 		if(PMReflector::implementsInterface($pluginName,"iNewWithValues") AND $userCanCreate) $os = "1";
@@ -927,7 +930,7 @@ class HTMLGUI implements icontextMenu {
 		
 		$userHiddenFields = mUserdata::getHides($pluginName);
 		
-		$this->texts = $this->languageClass->getEditTexts();
+		#$this->texts = $this->languageClass->getEditTexts();
 
 		if(!$userCanEdit AND (($userCanCreate AND $this->editedID != -1) OR !$userCanCreate)){
 			$html .= "
@@ -958,7 +961,7 @@ class HTMLGUI implements icontextMenu {
 		$html .= "
 			<form id=\"$this->FormID\">
 				<div class=\"backgroundColor1 Tab\">
-					<p>".$this->getOperationsHTML($pluginName, $this->editedID)."".($this->labelCaption == null ? $this->name." editieren:" : $this->labelCaption)."</p>
+					<p>".$this->getOperationsHTML($pluginName, $this->editedID)."".($this->labelCaption == null ? T::_("%1 editieren", T::_($this->name)).":" : T::_($this->labelCaption))."</p>
 				</div>
 				<div>
 				<table>
@@ -990,7 +993,7 @@ class HTMLGUI implements icontextMenu {
 					</tr>";
 				if($this->insertSpaceBefore[$value] != "" AND !$this->tabs[$value]) $html .= "
 					<tr class=\"FormSeparatorWithLabel\">
-						<td colspan=\"2\">".$this->insertSpaceBefore[$value]."</td>
+						<td colspan=\"2\">".T::_($this->insertSpaceBefore[$value])."</td>
 					</tr>";
 				elseif($this->insertSpaceBefore[$value] != "" AND $this->tabs[$value]) {
 					$html .= "
@@ -1016,8 +1019,8 @@ class HTMLGUI implements icontextMenu {
 			
 			$html .= "
 					<tr ".(isset($this->style[$value]) ? "style=\"".$this->style[$value]."\"" : "").">
-						<td id=\"".$value."EditL\"><label for=\"".$value."\">".$label.":".(isset($this->labelDescriptions[$value]) ? "<br /><small>".$this->labelDescriptions[$value]."</small>" : "")."</label></td>
-						<td id=\"".$value."EditR\">".$this->getInput($value)."".(isset($this->fieldDescriptions[$value]) ? "<br /><small style=\"color:grey;\">".$this->fieldDescriptions[$value]."</small>" : "")."</td>
+						<td id=\"".$value."EditL\"><label for=\"".$value."\">".T::_($label).":".(isset($this->labelDescriptions[$value]) ? "<br /><small>".$this->labelDescriptions[$value]."</small>" : "")."</label></td>
+						<td id=\"".$value."EditR\">".$this->getInput($value)."".(isset($this->fieldDescriptions[$value]) ? "<br /><small style=\"color:grey;\">".T::_($this->fieldDescriptions[$value], isset($this->fieldDescriptionsReplacement1[$value]) ? $this->fieldDescriptionsReplacement1[$value] : null)."</small>" : "")."</td>
 					</tr>";
 			
 		}
@@ -1038,7 +1041,7 @@ class HTMLGUI implements icontextMenu {
 							<input 
 								type=\"button\" 
 								name=\"currentSaveButton\"
-								value=\"".($this->labelSaveButton == null ? $this->name." speichern" : $this->labelSaveButton)."\" 
+								value=\"".($this->labelSaveButton == null ? T::_("%1 speichern", T::_($this->name)) : T::_($this->labelSaveButton))."\" 
 								onclick=\"".$this->saveButtonEvent."\" 
 								style=\"background-image:url(./images/i2/save.gif);\"
 							/>".$this->hiddenInputs."
@@ -1131,8 +1134,8 @@ class HTMLGUI implements icontextMenu {
 			foreach($this->prependedElements AS $E)
 				$top .= $E;
 		
-		$this->texts = $this->languageClass->getBrowserTexts();
-		$singularLanguageClass = $this->loadLanguageClass($this->singularClass);
+		#$this->texts = $this->languageClass->getBrowserTexts();
+		$singularLanguageClass = null;#$this->loadLanguageClass($this->singularClass);
 		
 		
 		
@@ -1174,6 +1177,7 @@ class HTMLGUI implements icontextMenu {
 		$oldValueForDisplayGroup = "";
 		#if($this->attributes != null)
 			#foreach($this->attributes AS $ei => $vi) {
+		if($this->attributes !== null)
 		for($i=0;$i < count($this->attributes);$i++){
 			#if($firstKey == null) $firstKey = $ei;
 			#$i = $ei;
@@ -1283,7 +1287,7 @@ class HTMLGUI implements icontextMenu {
 		foreach($this->shownCols as $key => $value)
 			$cols .= "<col class=\"backgroundColor".((++$c) % 2 + 2)." ".(isset($this->colClasses[$value]) ? $this->colClasses[$value] : "")."\" ".(isset($this->colStyles[$value]) ? "style=\"".$this->colStyles[$value]."\"" : "")." />\n";
 		
-		if(count($this->attributes) == 0) $cols .= "<col class=\"backgroundColor3\" />\n";
+		if($this->attributes !== null AND count($this->attributes) == 0) $cols .= "<col class=\"backgroundColor3\" />\n";
 		
 		if($this->onlyDisplayMode){
 			if($this->editInDisplayMode)
@@ -1618,9 +1622,16 @@ class HTMLGUI implements icontextMenu {
 			if($onClickFunction != "")
 				$action = str_replace("%VALUE", $key, $onClickFunction);
 
+			$replacement1 = null;
+			if(is_array($label)){
+				if(count($label))
+					$replacement1 = $label[1];
+				$label = $label[0];
+			}
+			
 			$html .= "
 			<tr onclick=\"$action\" id=\"cMEntry$key\" style=\"cursor:pointer;\" ".($selectedKey == $key ? "class=\"backgroundColor1\"" : "")." onmouseover=\"oldStyle = this.className;this.className='backgroundColor2';\" onmouseout=\"this.className=oldStyle;\">
-				<td>$label</td>
+				<td>".T::_($label, $replacement1)."</td>
 			</tr>";
 		}
 		$html .= "
@@ -1681,23 +1692,23 @@ class HTMLGUI implements icontextMenu {
 					$onDeleteQuestion = $c->getOnDeleteQuestion();
 				}
 
-				$texts = $this->languageClass->getEditTexts();
+				#$texts = $this->languageClass->getEditTexts();
 
 				#$BRepeatable = "";
 
 				$T = new HTMLTable(1);
 				
 				$Buttons = "";
-				if($s[3]{0} == "1"){
-					$B = new Button($texts["Neu mit Werten"], "new", "icon");
+				if($s[3][0] == "1"){
+					$B = new Button("Neu mit Werten", "new", "icon");
 					$B->onclick(OnEvent::reload("Left", "HTMLGUI;insertAsNew:true")/*"contentManager.reloadFrameLeft('HTMLGUI;insertAsNew:true');"*/);
 					$B->style("margin-right:10px;");
 					
 					$Buttons .= $B;
 				}
 				
-				if($s[3]{1} == "1"){
-					$B = new Button($texts["Kopieren"], "seiten", "icon");
+				if($s[3][1] == "1"){
+					$B = new Button("Kopieren", "seiten", "icon");
 					$B->rmePCR(str_replace("GUI", "", $s[1]), $s[2], 'cloneMe', "", "function(transport){ lastLoadedLeft = (transport.responseText == '' ? -1 : transport.responseText); contentManager.reloadFrameLeft(); contentManager.reloadFrameRight(); }");
 					#$B->onclick("rme('$s[1]','$s[2]','cloneMe','', 'lastLoadedLeft = (transport.responseText == \'\' ? -1 : transport.responseText); contentManager.reloadFrameLeft(); contentManager.reloadFrameRight();');");
 					$B->style("margin-right:10px;");
@@ -1705,24 +1716,24 @@ class HTMLGUI implements icontextMenu {
 					$Buttons .= $B;
 				}
 				
-				if($s[3]{2} == "1"){
-					$B = new Button($texts["Löschen"], "trash", "icon");
-					$B->onclick("deleteClass('".str_replace("GUI", "", $s[1])."','$s[2]',".($onDeleteEvent == "" ? "function() {  contentManager.reloadFrameRight(); if(typeof lastLoadedLeft != 'undefined' && lastLoadedLeft == '$s[2]') $('contentLeft').update(''); }" : $onDeleteEvent).",'".($onDeleteQuestion == "" ? $texts["Wirklich löschen?"] : $onDeleteQuestion)."');");
+				if($s[3][2] == "1"){
+					$B = new Button("Löschen", "trash", "icon");
+					$B->onclick("deleteClass('".str_replace("GUI", "", $s[1])."','$s[2]',".($onDeleteEvent == "" ? "function() {  contentManager.reloadFrameRight(); if(typeof lastLoadedLeft != 'undefined' && lastLoadedLeft == '$s[2]') $('contentLeft').update(''); }" : $onDeleteEvent).",'".($onDeleteQuestion == "" ? "Wirklich löschen?" : $onDeleteQuestion)."');");
 					$B->style("margin-right:10px;");
 					
 					$Buttons .= $B;
 				}
 				
-				if($s[3]{3} == "1"){
-					$BRepeatable = new Button($texts["Repeatable erstellen"],"redo");
+				if($s[3][3] == "1"){
+					$BRepeatable = new Button("Repeatable erstellen","redo");
 					$BRepeatable->type("icon");
 					$BRepeatable->onclick("contentManager.newClassButton('Repeatable','','contentLeft','RepeatableGUI;RepeatablePlugin:$s[1];RepeatablePluginElementID:$s[2]');");
 					
 					$Buttons .= $BRepeatable;
 				}
 				
-				if($s[3]{4} == "1"){
-					$B = new Button($texts["XML Export"], "export", "icon");
+				if($s[3][4] == "1"){
+					$B = new Button("XML Export", "export", "icon");
 					$B->onclick("windowWithRme('$s[1]', '$s[2]', 'getXML', '');phynxContextMenu.stop();");
 					$B->style("margin-right:10px;");
 					
@@ -1734,7 +1745,7 @@ class HTMLGUI implements icontextMenu {
 				
 				$T->addRowClass("backgroundColor0");
 						
-				echo $T."<p><small style=\"color:grey;\">Interne ID des Eintrags: $s[2]</small></p>";
+				echo $T."<p><small style=\"color:grey;\">".T::_("Interne ID des Eintrags").": $s[2]</small></p>";
 						
 				/*echo "
 				<table style=\"text-align:center;border:0px;\">
@@ -1994,12 +2005,12 @@ class HTMLGUI implements icontextMenu {
 	 * @param string $plugin
 	 */
 	public function VersionCheck($plugin){
-		$l = $this->languageClass->getBrowserTexts();
+		#$l = $this->languageClass->getBrowserTexts();
 
 		if(Util::versionCheck($_SESSION["applications"]->getRunningVersion(), $_SESSION["CurrentAppPlugins"]->getVersionOfPlugin($plugin) , "!=")){
 					
 			$t = new HTMLTable(1);
-			$t->addRow(str_replace(array("%1","%2"),array($_SESSION["CurrentAppPlugins"]->getVersionOfPlugin($plugin), $_SESSION["applications"]->getRunningVersion()),$l["versionError"]));
+			$t->addRow(str_replace(array("%1","%2"),array($_SESSION["CurrentAppPlugins"]->getVersionOfPlugin($plugin), $_SESSION["applications"]->getRunningVersion()),"Sie verwenden eine alte Version dieses Plugins (%1) mit einer neueren Version des Frameworks (%2).<br>Wenn Sie diese Anwendung aktualisiert haben, verwenden Sie bitte nachfolgenden Knopf, um sie neu zu laden."));
 			$t->addRow(Installation::getReloadButton());
 			die($t->getHTML());
 		}

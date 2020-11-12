@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 function BackupManagerGUIFatalErrorShutdownHandler() {
 	$last_error = error_get_last();
@@ -69,6 +69,12 @@ class BackupManagerGUI implements iGUIHTML2 {
 		} catch(TableDoesNotExistException $e){
 			
 		}
+		$FTPsServer = null;
+		try {
+			$FTPsServer = LoginData::get("BackupFTPsServerUserPass");
+		} catch(TableDoesNotExistException $e){
+			
+		}
 		
 		$SFTPServer = null;
 		try {
@@ -78,9 +84,20 @@ class BackupManagerGUI implements iGUIHTML2 {
 		}
 		$ST = new HTMLSideTable("right");
 		
+		$B = $ST->addButton("Neue Sicherung\nerstellen", "new");
+		$B->popup("", "Backup-Manager", "BackupManager", "-1", "getWindow", array("0", "'Left'"));
+		
+		$B = $ST->addButton("Sicherungsverz.\nändern", "bericht");
+		$B->popup("", "Sicherungsverzeichnis", "BackupManager", "-1", "backupDirChangePopup");
+		
+		#contentManager.rmePCR('BackupManager', '', 'getWindow', '', 'Popup.displayNamed(\'BackupManagerGUI\',\'Backup-Manager\',transport);');
 		$FTPServerID = $FTPServer == null ? -1 : $FTPServer->getID();
 		$BFTP = $ST->addButton("FTP-Server\neintragen", "./plugins/Installation/serverMail.png");
 		$BFTP->popup("edit", "FTP-Server", "LoginData", $FTPServerID, "getPopup", "", "LoginDataGUI;preset:backupFTPServer");
+		
+		$FTPsServerID = $FTPsServer == null ? -1 : $FTPsServer->getID();
+		$BFTP = $ST->addButton("FTPs-Server\neintragen", "./plugins/Installation/serverMail.png");
+		$BFTP->popup("edit", "FTPs-Server", "LoginData", $FTPsServerID, "getPopup", "", "LoginDataGUI;preset:backupFTPsServer");
 		
 		if(extension_loaded("ssh2")){
 			$SFTPServerID = $SFTPServer == null ? -1 : $SFTPServer->getID();
@@ -101,6 +118,42 @@ class BackupManagerGUI implements iGUIHTML2 {
 		return $ST.$TB;
 	}
 
+	public function backupDirChangePopup(){
+		echo "<p>Bitte geben Sie das Verzeichnis an, in dem die Datensicherungen abgespeichert werden sollen. <span style=\"color:red;\">Stellen Sie unbedingt sicher, dass das Verzeichnis nicht öffentlich erreichbar ist!</span></p>";
+		
+		$F = new HTMLForm("dir", array("verzeichnis"));
+		$F->getTable()->setColWidth(1, 120);
+		$F->setValue("verzeichnis", mUserdata::getGlobalSettingValue("BackupManagerDir", self::getBackupDir()));
+		$F->setSaveRMEPCR("Speichern", "", "BackupManager", -1, "backupDirChangeSave", OnEvent::closePopup("BackupManager"));
+		$F->setDescriptionField("verzeichnis", "Standard: ".Util::getRootPath()."system/Backup/");
+		echo $F;
+	}
+	
+	public function backupDirChangeSave($verzeichnis){
+		$verzeichnis = str_replace("\\", "/", $verzeichnis);
+		if(trim($verzeichnis) != "")
+			$verzeichnis = rtrim($verzeichnis, "/")."/";
+		
+		
+		if(Util::getRootPath()."system/Backup/" == $verzeichnis OR trim($verzeichnis) == ""){
+			$U = new mUserdata();
+			$U->delUserdata("BackupManagerDir", -1);
+			
+			Red::messageSaved ();
+		}
+		
+		mUserdata::setUserdataS("BackupManagerDir", $verzeichnis, "", -1);
+		Red::messageSaved ();
+	}
+	
+	public static function getBackupDir(){
+		try {
+			return mUserdata::getGlobalSettingValue("BackupManagerDir", Util::getRootPath()."system/Backup/");
+		} catch (Exception $e){
+			return Util::getRootPath()."system/Backup/";
+		}
+	}
+	
 	public function clearSettings(){
 		$AC = anyC::get("Userdata", "name", "noBackupManager");
 		while($U = $AC->n())
@@ -152,13 +205,17 @@ class BackupManagerGUI implements iGUIHTML2 {
 	public function displayBackup($name){
 		if($_SESSION["S"]->isUserAdmin() == "0")
 			throw new AccessDeniedException();
-
-		$html = Util::getBasicHTML("", $name);
-		$html = str_replace("</html>","", $html);
-		$html = str_replace("</body>","", $html);
-		echo "$html<pre>";
-		readfile(Util::getRootPath()."system/Backup/$name");
-		echo "</pre></body></html>";
+		
+		header('Content-Type: application/octet-stream');
+		#header("Content-Transfer-Encoding: Binary"); 
+		header("Content-disposition: attachment; filename=\"" . basename($name) . "\"");
+		header("Content-Length: ". filesize(self::getBackupDir().$name));
+		#$html = Util::getBasicHTML("", $name);
+		#$html = str_replace("</html>","", $html);
+		#$html = str_replace("</body>","", $html);
+		#echo "$html<pre>";
+		readfile(self::getBackupDir().$name);
+		#echo "</pre></body></html>";
 	}
 
 	private function noBackupButton(){
@@ -170,15 +227,15 @@ class BackupManagerGUI implements iGUIHTML2 {
 			$BSave = new Button("Einstellung\nspeichern","save");
 			$BSave->style("float:right;");
 			$BSave->onclick("if($('BackupGoAway').checked) ");
-			$BSave->rmePCR("BackupManager", "", "GoAway", "", "Popup.close('','BackupManagerGUI'); contentManager.reloadFrame('contentLeft');");
+			$BSave->rmePCR("BackupManager", "", "GoAway", "", "Popup.close('','BackupManagerGUI'); contentManager.reloadFrame('contentScreen');");
 
 			return $BSave.$GoAway." <label for=\"BackupGoAway\" style=\"float:none;text-align:left;width:auto;\">Diese Meldung nicht mehr anzeigen, ich erstelle meine Backups selbst.</label>";
 	}
 
-	public function getWindow($redo = false){
+	public function getWindow($redo = false, $reload = "none"){
 		register_shutdown_function('BackupManagerGUIFatalErrorShutdownHandler');
 		
-		$F = new File(Util::getRootPath()."system/Backup");
+		$F = new File(self::getBackupDir());
 		
 		if(!$F->A("FileIsWritable")){
 			$B = new Button("Achtung","restrictions");
@@ -187,7 +244,7 @@ class BackupManagerGUI implements iGUIHTML2 {
 
 			$T = new HTMLTable(1);
 
-			$T->addRow($B."Es können keine Backups von Ihrer Datenbank angelegt werden, da das Verzeichnis /system/Backup nicht durch den Webserver beschreibbar ist.");
+			$T->addRow($B."Es können keine Backups von Ihrer Datenbank angelegt werden, da das Verzeichnis ".self::getBackupDir()." nicht durch den Webserver beschreibbar ist.");
 			$T->addRow("Machen Sie das Verzeichnis mit einem FTP-Programm beschreibbar. Klicken Sie dazu mit der rechten Maustaste auf das Verzeichnis auf dem Server, wählen Sie \"Eigenschaften\", und geben Sie den Modus 777 an, damit es durch den Besitzer, die Gruppe und alle Anderen les- und schreibbar ist.");
 
 			$BRefresh = new Button("Aktualisieren","refresh");
@@ -220,11 +277,11 @@ class BackupManagerGUI implements iGUIHTML2 {
 				$B->type("icon");
 				$B->style("float:left;margin-right:10px;");
 
-				$T->addRow($B."Das Backup wurde erfolgreich abgeschlossen!<br />Die Größe der Sicherungsdatei beträgt <strong>".Util::formatByte($F->A("FileSize"), 2)."</strong>");
+				$T->addRow($B."Das Backup wurde erfolgreich abgeschlossen!<br>Die Größe der Sicherungsdatei beträgt <strong>".Util::formatByte($F->A("FileSize"), 2)."</strong>");
 				$T->addRowClass("backgroundColor0");
 				
 				try {
-					$ftpUpload = $this->FTPUpload(Util::getRootPath()."system/Backup/$BOK");
+					$ftpUpload = $this->FTPUpload(self::getBackupDir().$BOK);
 					if($ftpUpload === true){
 						$B = new Button("FTP-Upload erfolgreich","okCatch");
 						$B->type("icon");
@@ -233,7 +290,17 @@ class BackupManagerGUI implements iGUIHTML2 {
 						$T->addRow(array($B."Das Backup wurde erfolgreich auf den FTP-Server hochgeladen"));
 					}
 					
-					$sftpUpload = $this->SFTPUpload(Util::getRootPath()."system/Backup/$BOK");
+					$ftpsUpload = $this->FTPsUpload(self::getBackupDir().$BOK);
+					if($ftpsUpload === true){
+						$B = new Button("FTP-Upload erfolgreich","okCatch");
+						$B->type("icon");
+						$B->style("float:left;margin-right:10px;");
+
+						$T->addRow(array($B."Das Backup wurde erfolgreich auf den FTPs-Server hochgeladen"));
+					}
+					
+					
+					$sftpUpload = $this->SFTPUpload(self::getBackupDir().$BOK);
 					if($sftpUpload === true){
 						$B = new Button("SFTP-Upload erfolgreich","okCatch");
 						$B->type("icon");
@@ -254,7 +321,7 @@ class BackupManagerGUI implements iGUIHTML2 {
 				$T->addRow($B."Beim Erstellen des Backups ist ein Fehler aufgetreten: $BOK");
 				$html .= $T;
 			}
-			$html .= OnEvent::script(OnEvent::frame("desktopLeft", "Desktop", "2"));#"<script type=\"text/javascript\">contentManager.reloadFrame('contentLeft');</script>";
+			$html .= OnEvent::script(OnEvent::frame("Screen", "Desktop"));#"<script type=\"text/javascript\">contentManager.reloadFrame('contentLeft');</script>";
 		}
 
 
@@ -294,13 +361,17 @@ class BackupManagerGUI implements iGUIHTML2 {
 		$TF->addRowColspan(1, 2);
 
 		$BC = new Button("Fenster\nschließen", "bestaetigung");
-		$BC->onclick(OnEvent::closePopup("", "BackupManagerGUI"));
+		$BC->onclick(OnEvent::closePopup("", "BackupManagerGUI").OnEvent::closePopup("", "BackupManager"));
 		$BC->style("float:right;margin:10px;");
 		
 		$BD = new Button("Details\nanzeigen", "down");
 		$BD->onclick("\$j('#BMMoreDetails').slideToggle();");
 		$BD->style("margin:10px;");
 		$BD->className("backgroundColor0");
+		
+		
+		if($reload != "none")
+			echo OnEvent::script (OnEvent::reload ($reload));
 		
 		echo $html.$BC.$BD."<div style=\"clear:both;\"></div><div id=\"BMMoreDetails\" style=\"display:none;\">".$TF."</div>";
 	}
@@ -313,7 +384,7 @@ class BackupManagerGUI implements iGUIHTML2 {
 			$i++;
 
 			if($i > 27){
-				unlink(Util::getRootPath()."system/Backup/".$fileName);
+				unlink(self::getBackupDir().$fileName);
 				#$F->deleteMe();
 			}
 		}
@@ -327,26 +398,38 @@ class BackupManagerGUI implements iGUIHTML2 {
 
 		$dir = new DirectoryIterator($dir);
 
-		foreach($dir as $value)
-			if (!$value->isDot() AND strpos($value->getFilename(), ".") !== 0)
-				$data[$value->getFilename()] = $value->getSize();
+		foreach($dir as $value){
+			if ($value->isDot())
+				continue;
+			
+			if($value->isDir())
+				continue;
+			
+			if(strpos($value->getFilename(), ".") === 0)
+				continue;
+			
+			if(strpos($value->getFilename(), ".sql.gz") === false)
+				continue;
+			
+			$data[$value->getFilename()] = $value->getSize();
+		}
 
 		krsort($data);
 
 		return $data;
 	}
 	
-	private static function getNewBackupName(){
-		return Util::getRootPath()."system/Backup/".$_SESSION["DBData"]["datab"].".".date("Ymd")."_utf8.sql.gz";
+	public static function getNewBackupName(){
+		return self::getBackupDir().$_SESSION["DBData"]["datab"].".".date("Ymd")."_utf8.sql.gz";
 	}
 
 	public function makeBackupOfToday(){
 		$this->deleteOldBackups();
 		
-		$F = new File(Util::getRootPath()."system/Backup/.htaccess");
+		$F = new File(self::getBackupDir().".htaccess");
 		$F->loadMe();
 
-		if($F->getA() == null){
+		if($F->getA() == null AND self::getBackupDir() == Util::getRootPath()."system/Backup/"){
 			file_put_contents($F->getID(), "<IfModule mod_authz_core.c>
     Require all denied
 </IfModule>
@@ -375,7 +458,7 @@ require valid-user
 		$CONF['date'] = "d.m.Y";
 		$CONF['sql_db'] = $_SESSION["DBData"]["datab"];
 
-		define("PMBP_EXPORT_DIR", Util::getRootPath()."system/Backup/");
+		define("PMBP_EXPORT_DIR", self::getBackupDir());
 		define('PMBP_VERSION',"v.2.1");
 		define('PMBP_WEBSITE',"http://www.phpMyBackupPro.net");
 
@@ -385,12 +468,12 @@ require valid-user
 		$filename = PMBP_dump($CONF, $PMBP_SYS_VAR, $_SESSION["DBData"]["datab"], true, true, false, false, "");
 		
 		if(file_exists($filename))
-			chmod(Util::getRootPath()."system/Backup/".$filename, 0666);
+			chmod(self::getBackupDir().$filename, 0666);
 		return $filename;
 	}
 
-	public function FTPUpload($filename){
-		$FTPServer = LoginData::get("BackupFTPServerUserPass");
+	public function FTPsUpload($filename){
+		$FTPServer = LoginData::get("BackupFTPsServerUserPass");
 		
 		if($FTPServer == null OR $FTPServer->A("server") == "")
 			return null;
@@ -399,13 +482,20 @@ require valid-user
 		$benutzername = $FTPServer->A("benutzername");
 		$passwort = $FTPServer->A("passwort");
 
-		$connection_id = ftp_connect($ftp_server);
+		$port = 21;
+		$ex = explode(":", $ftp_server);
+		if(isset($ex[1])){
+			$port = $ex[1];
+			$ftp_server = $ex[0];
+		}
+		
+		$connection_id = ftp_ssl_connect($ftp_server, $port);
 		
 		if (!$connection_id) 
-			throw new Exception("Verbindung mit FTP-Server $ftp_server nicht möglich!");
+			throw new Exception("Verbindung mit FTPs-Server $ftp_server nicht möglich!");
 
 		$login_result = ftp_login($connection_id, $benutzername, $passwort);
-
+		
 		if (!$login_result) 
 			throw new Exception("Anmeldung als Benutzer $benutzername nicht möglich!");
 		
@@ -418,6 +508,61 @@ require valid-user
 		$lokale_datei = $filename;
 
 		$upload = ftp_put($connection_id, $zieldatei, $lokale_datei, FTP_ASCII);
+		
+		if (!$upload){
+			ftp_pasv($connection_id, true);
+			$upload = ftp_put($connection_id, $zieldatei, $lokale_datei, FTP_ASCII);
+		}
+		
+		if (!$upload)
+		  throw new Exception("Beim FTP-Upload ist ein Fehler aufgetreten");
+		
+		ftp_quit($connection_id);
+		
+		return true;
+	}
+
+	public function FTPUpload($filename){
+		$FTPServer = LoginData::get("BackupFTPServerUserPass");
+		
+		if($FTPServer == null OR $FTPServer->A("server") == "")
+			return null;
+		
+		$ftp_server = $FTPServer->A("server");
+		$benutzername = $FTPServer->A("benutzername");
+		$passwort = $FTPServer->A("passwort");
+
+		$port = 21;
+		$ex = explode(":", $ftp_server);
+		if(isset($ex[1])){
+			$port = $ex[1];
+			$ftp_server = $ex[0];
+		}
+		
+		$connection_id = ftp_connect($ftp_server, $port);
+		
+		if (!$connection_id) 
+			throw new Exception("Verbindung mit FTP-Server $ftp_server nicht möglich!");
+
+		$login_result = ftp_login($connection_id, $benutzername, $passwort);
+		
+		if (!$login_result) 
+			throw new Exception("Anmeldung als Benutzer $benutzername nicht möglich!");
+		
+		
+		$subDir = $FTPServer->A("optionen");
+		if($subDir != "" AND $subDir[strlen($subDir) - 1] != "/")
+			$subDir .= "/";
+		
+		$zieldatei = $subDir.basename($filename);
+		$lokale_datei = $filename;
+
+		$upload = ftp_put($connection_id, $zieldatei, $lokale_datei, FTP_ASCII);
+		
+		if (!$upload){
+			ftp_pasv($connection_id, true);
+			$upload = ftp_put($connection_id, $zieldatei, $lokale_datei, FTP_ASCII);
+		}
 		
 		if (!$upload)
 		  throw new Exception("Beim FTP-Upload ist ein Fehler aufgetreten");
@@ -433,32 +578,22 @@ require valid-user
 		if($FTPServer == null OR $FTPServer->A("server") == "")
 			return null;
 		
-		$ftp_server = $FTPServer->A("server");
-		$benutzername = $FTPServer->A("benutzername");
-		$passwort = $FTPServer->A("passwort");
-
-		#$connection_id = ftp_connect($ftp_server);
-
-		#$login_result = ftp_login($connection_id, $benutzername, $passwort);
-		
-		#if ((!$connection_id) || (!$login_result)) 
-		#	throw new Exception("Verbindung mit SFTP-Server $ftp_server als Benutzer $benutzername nicht möglich!");
-		
-		
 		$subDir = $FTPServer->A("optionen");
 		if($subDir != "" AND $subDir[strlen($subDir) - 1] != "/")
 			$subDir .= "/";
 		
 		$zieldatei = $subDir.basename($filename);
-		$lokale_datei = $filename;
-
-		#$upload = ftp_put($connection_id, $zieldatei, $lokale_datei, FTP_ASCII);
-		$upload = copy($lokale_datei, "ssh2.sftp://$benutzername:$passwort@$ftp_server/$zieldatei");
+		
+		$connection = ssh2_connect($FTPServer->A("server"), 22);
+		$login = ssh2_auth_password($connection, $FTPServer->A("benutzername"), $FTPServer->A("passwort"));
+		
+		if (!$login)
+			throw new Exception("Anmeldung an SFTP-Server fehlgeschlagen!");
+		
+		$upload = ssh2_scp_send($connection, $filename, $zieldatei, 0644);
 		
 		if (!$upload)
-		  throw new Exception("Beim SFTP-Upload ist ein Fehler aufgetreten");
-		
-		#ftp_quit($connection_id);
+			throw new Exception("Beim SFTP-Upload ist ein Fehler aufgetreten");
 		
 		return true;
 	}
@@ -477,9 +612,9 @@ require valid-user
 			mysqli_set_charset($con, "latin1");
 		
 		if(substr($name, -3, 3) == ".gz")
-			$file = gzopen(Util::getRootPath()."system/Backup/$name", "r");
+			$file = gzopen(self::getBackupDir().$name, "r");
 		else
-			$file = fopen(Util::getRootPath()."system/Backup/$name", "r");
+			$file = fopen(self::getBackupDir().$name, "r");
 
 		$return = PMBP_exec_sql($file, $con);
 

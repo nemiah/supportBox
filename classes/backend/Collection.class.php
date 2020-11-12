@@ -15,7 +15,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 abstract class Collection {
 	protected $A = null;
@@ -171,11 +171,17 @@ abstract class Collection {
 		#if(!$this->checkIfMyTableExists()) {
 
 			$creates = $this->getMyTablesInfos();
-			$message = "Führe SQL aus...<br />";
+			$message = "Führe SQL aus...<br>";
 			
 			$CI = $creates->getNextEntry();
 			while($CI != null){
 				$CIA = $CI->getA();
+				if(trim($CIA->MySQL) == ""){
+					$message .= "Keine Tabellen-Information!";
+					$CI = $creates->getNextEntry();
+					continue;
+				}
+				
 				$CIA->MySQL = str_replace("%%&ESCSLASH%%&","\'",$CIA->MySQL);
 				$CIA->MSSQL = str_replace("%%&ESCSLASH%%&","\'",$CIA->MSSQL);
 				$message .= SqlFormatter::format(htmlentities($CIA->MySQL), false);
@@ -187,9 +193,11 @@ abstract class Collection {
 					$connection->affected_rows = mysql_affected_rows();
 				}
 				$CI = $creates->getNextEntry();
-				$message .= "<br /><br />Anzahl betroffener Datensätze: ".$connection->affected_rows."<br />";
-				if($connection->error) $message .= "<span style=\"color:red;\">Es ist ein SQL-Fehler aufgetreten: ".$connection->error."</span><br />";
-				else $message .= "<span style=\"color:green;\">Es ist kein MySQL-Fehler aufgetreten</span><br />";
+				$message .= "<br><br>Anzahl betroffener Datensätze: ".$connection->affected_rows."<br>";
+				if($connection->error) 
+					$message .= "<span style=\"color:red;\">Es ist ein SQL-Fehler aufgetreten: ".$connection->error."</span><br>";
+				else 
+					$message .= "<span style=\"color:green;\">Es ist kein MySQL-Fehler aufgetreten</span><br>";
 				#$message .= "<br /><br />";
 			}
 		#} else $message = "Diese Tabelle wurde bereits angelegt";

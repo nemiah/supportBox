@@ -15,10 +15,40 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  * 
- *  2007 - 2018, Furtmeier Hard- und Software - Support@Furtmeier.IT
+ *  2007 - 2020, open3A GmbH - Support@open3A.de
  */
 class Installation extends PersistentObject {
 	private $folder = "./system/DBData/";
+	
+	public static function getMandanten($uniqueDB = false){
+		$CH = Util::getCloudHost();
+		$usedDB = array();
+		$mandanten = array();
+		if(file_exists(Util::getRootPath()."plugins/multiInstall/plugin.xml") AND ($CH == null OR get_class($CH) == "CloudHostAny")){
+			list($folder) = Installation::getDBFolder();
+			$MI = new mInstallation();
+			$MI->changeFolder($folder);
+			while($I = $MI->n()){
+				if($I->A("httpHost") == "cloudData")
+					continue;
+
+				if(trim($I->A("httpHost")) == "")
+					continue;
+				
+				if(trim($I->A("host")) == "")
+					continue;
+				
+				if($uniqueDB AND isset($usedDB[$I->A("host").$I->A("datab")]))
+					continue;
+				
+				$usedDB[$I->A("host").$I->A("datab")] = true;
+				
+				$mandanten[$I->getID()] = $I->A("httpHost");
+			}
+		}
+		
+		return $mandanten;
+	}
 	
 	public static function getDBFolder($folder = null){
 		$external = false;
@@ -46,8 +76,9 @@ class Installation extends PersistentObject {
 
 	public static function getReloadButton(){
 		$B = new Button("Anwendung\nneu laden", "refresh");
-		$B->onclick("Installation.reloadApp();");
-
+		#$B->onclick("Installation.reloadApp();");
+		$B->rmePCR("Util", -1, "reloadApplication", [], "function(){ location.reload(true); }");
+		
 		return $B;
 	}
 
@@ -59,8 +90,9 @@ class Installation extends PersistentObject {
 	function saveMe($checkUserData = true, $output = false){
         parent::saveMe($checkUserData, false);
         
-        $_SESSION["DBData"] = $_SESSION["S"]->getDBData();
-
+        #$_SESSION["DBData"] = $_SESSION["S"]->getDBData(null, $_SESSION["DBData"]["InstallationID"]);
+		Session::reloadDBData();
+		
 		if(PHYNX_MAIN_STORAGE == "MySQL")
 			$DB = new DBStorage();
 		else

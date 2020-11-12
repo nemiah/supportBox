@@ -271,11 +271,11 @@ class htmlMimeMail5 {
 	 */
 	public function setCRLF($crlf = "\n") {
 		if (!defined('CRLF')) {
-			define('CRLF', $crlf, true);
+			define('CRLF', $crlf);
 		}
 
 		if (!defined('MAIL_MIMEPART_CRLF')) {
-			define('MAIL_MIMEPART_CRLF', $crlf, true);
+			define('MAIL_MIMEPART_CRLF', $crlf);
 		}
 	}
 	
@@ -310,6 +310,13 @@ class htmlMimeMail5 {
 
 	public function getSMTPParams(){
 		return $this->smtp_params;
+	}
+
+	public function getSMTPLog(){
+		if($this->smtp_conn === null)
+			return "";
+		
+		return trim($this->smtp_conn->getLog());
 	}
 	
 	/**
@@ -1005,9 +1012,9 @@ class htmlMimeMail5 {
 	 * @param string $type       Method to be used to send the mail.
 	 *                           Used to determine the line ending type.
 	 */
-	public function getRFC822($recipients, $type = 'mail') {
+	public function getRFC822($recipients, $type = 'mail', $useDate = null) {
 		// Make up the date header as according to RFC822
-		$this->setHeader('Date', date('D, d M Y H:i:s O'));
+		$this->setHeader('Date', date('D, d M Y H:i:s O', $useDate == null ? time() : $useDate));
 
 		if (!defined('CRLF')) {
 			$this->setCRLF($type == 'mail' ? "\n" : "\r\n");
