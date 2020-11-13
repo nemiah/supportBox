@@ -39,10 +39,10 @@ class OnAction {
 			return SBUtil::error("Aktuell sind keine neuen Verbindungen erlaubt.");
 		
 		$localIP = SBUtil::localIP();
-		if(SBUtil::serial() != "00000000demodemo" AND ($R->SBForwardIP == $localIP OR trim($R->SBForwardIP) == "localhost" OR substr(trim($R->SBForwardIP), 0, 4) == "127.")){
-			$C->close();
-			return SBUtil::error("Diese Verbindung ist unzulässig!");
-		}
+		#if(SBUtil::serial() != "00000000demodemo" AND ($R->SBForwardIP == $localIP OR trim($R->SBForwardIP) == "localhost" OR substr(trim($R->SBForwardIP), 0, 4) == "127.")){
+		#	$C->close();
+		#	return SBUtil::error("Diese Verbindung ist unzulässig!");
+		#}
 		
 		SBUtil::log("Connecting $args[1]:$R->SBForwardIP:$R->SBForwardPort ($args[0])");
 		
