@@ -1,6 +1,6 @@
 # supportBox
 
-Raspbian Buster installation:
+Raspbian Buster Installation:
 
 sudo apt update
 sudo apt dist-upgrade
@@ -15,4 +15,12 @@ GRANT USAGE ON * . * TO 'supportbox'@'localhost' IDENTIFIED BY '$password' WITH 
 CREATE DATABASE IF NOT EXISTS supportbox;
 GRANT ALL PRIVILEGES ON supportbox . * TO 'supportbox'@'localhost';"
 
+git clone https://github.com/nemiah/supportBox.git /var/www/html/supportBox
 
+chmod 777 /var/www/html/supportBox/system/DBData/Installation.pfdb.php
+echo "<?php echo \"This is a database-file.\"; /*
+host&%%%&user&%%%&password&%%%&datab&%%%&httpHost
+varchar(30)&%%%&varchar(20)&%%%&varchar(20)&%%%&varchar(20)&%%%&varchar(40)
+localhost                     &%%%&supportbox          &%%%&$password&%%%&supportbox          &%%%&*                                       %%&&&
+*/ ?>
+" > /var/www/html/supportBox/system/DBData/Installation.pfdb.php;
