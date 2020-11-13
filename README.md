@@ -27,3 +27,10 @@ localhost                     &%%%&supportbox          &%%%&$password&%%%&suppor
 
 sudo ln -s /var/www/html/supportBox/supportBox/SBInfo/server/supportbox.conf /etc/supervisor/conf.d/supportbox.conf
 sudo cp /var/www/html/supportBox/supportBox/SBInfo/server/sudoers /etc/sudoers.d/010_supportbox
+
+sudo service supervisor restart
+
+mkdir /home/pi/thruway
+cd /home/pi/thruway
+curl -sS https://getcomposer.org/installer | php
+php composer.phar require voryx/thruway
