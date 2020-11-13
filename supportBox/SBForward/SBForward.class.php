@@ -36,15 +36,15 @@ class SBForward extends PersistentObject {
 	}
 	
 	function newMe($checkUserData = true, $output = false) {
-		if(!$this->checkIP($this->A("SBForwardIP")))
-			Red::errorD ("Die IP der supportBox darf nicht verwendet werden!");
+		#if(!$this->checkIP($this->A("SBForwardIP")))
+		#	Red::errorD ("Die IP der supportBox darf nicht verwendet werden!");
 		
 		return parent::newMe($checkUserData, $output);
 	}
 	
 	function saveMe($checkUserData = true, $output = false) {
-		if(!$this->checkIP($this->A("SBForwardIP")))
-			Red::errorD ("Die IP der supportBox darf nicht verwendet werden!");
+		#if(!$this->checkIP($this->A("SBForwardIP")))
+		#	Red::errorD ("Die IP der supportBox darf nicht verwendet werden!");
 		
 		return parent::saveMe($checkUserData, $output);
 	}
