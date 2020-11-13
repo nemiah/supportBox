@@ -32,7 +32,7 @@ class SBTunnel extends PersistentObject {
 		
 		$cloudID = mUserdata::getGlobalSettingValue("SBCloud", null);
 		$content = "[program:autoSSH]
-command                 = autossh -p80 -M0 -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ControlPath=none -oStrictHostKeyChecking=no -R".$this->A("SBTunnelServerPort").":".$this->A("SBTunnelIP").":".$this->A("SBTunnelPort")." $cloudID@static01.supportbox.io
+command                 = autossh -p80 -M0 -N -o ExitOnForwardFailure=yes -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ControlPath=none -oStrictHostKeyChecking=no -R".$this->A("SBTunnelServerPort").":".trim($this->A("SBTunnelIP")).":".trim($this->A("SBTunnelPort"))." $cloudID@static01.supportbox.io
 process_name            = ".$this->A("SBTunnelServerPort")."
 numprocs                = 1
 autostart               = true
