@@ -4,7 +4,7 @@ Raspbian Buster Installation:
 
 sudo apt update
 sudo apt dist-upgrade
-sudo apt -y install mariadb-server-10.3 telnet nmap unzip zip mutt sudo rsync curl ntp git libapache2-mod-php7.3 php7.3-mysql php7.3-soap php7.3-gd php7.3-imap php7.3-mbstring php7.3-xml php7.3-curl php7.3-tidy php7.3-zip php7.3-mailparse phpmyadmin;
+sudo apt -y install mariadb-server-10.3 supervisor autossh telnet nmap unzip zip mutt sudo rsync curl ntp git libapache2-mod-php7.3 php7.3-mysql php7.3-soap php7.3-gd php7.3-imap php7.3-mbstring php7.3-xml php7.3-curl php7.3-tidy php7.3-zip php7.3-mailparse phpmyadmin;
 
 sudo rm /var/www/html/index.html
 
@@ -24,3 +24,6 @@ varchar(30)&%%%&varchar(20)&%%%&varchar(20)&%%%&varchar(20)&%%%&varchar(40)
 localhost                     &%%%&supportbox          &%%%&$password&%%%&supportbox          &%%%&*                                       %%&&&
 */ ?>
 " > /var/www/html/supportBox/system/DBData/Installation.pfdb.php;
+
+sudo ln -s /var/www/html/supportBox/supportBox/SBInfo/server/supportbox.conf /etc/supervisor/conf.d/supportbox.conf
+cp /var/www/html/supportBox/supportBox/SBInfo/server/sudoers /etc/sudoers.d/010_supportbox
