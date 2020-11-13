@@ -147,7 +147,7 @@ class mSBInfoGUI extends UnpersistentClass implements iGUIHTMLMP2 {
 		exec("sudo /usr/bin/supervisorctl restart all", $output);
 		#print_r($output);
 		sleep(5);
-		if(SBInfo::status() != "RUNNING")
+		if(strpos(SBInfo::status(), "Client: RUNNING") === false)
 			echo "<p class=\"error\">Supervisor-Fehler: ". implode("<br>", $output)."</p>";
 		else
 			echo "<p class=\"confirm\">Supervisor neu gestartet</p>";
