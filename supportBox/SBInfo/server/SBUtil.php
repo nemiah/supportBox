@@ -3,7 +3,7 @@
 class SBUtil {
 	public static function dbConnection(){
 		$DB = new \PhpFileDB();
-		$DB->setFolder(__DIR__."/../../system/DBData/");
+		$DB->setFolder(__DIR__."/../../../system/DBData/");
 		$Q = $DB->pfdbQuery("SELECT * FROM Installation");
 		$R = $DB->pfdbFetchAssoc($Q);
 			
