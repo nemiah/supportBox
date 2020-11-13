@@ -68,7 +68,7 @@ class OnAction {
 		
 		if(file_exists("/home/pi/pids/ssh_".$args[0])){
 			$pid = file_get_contents("/home/pi/pids/ssh_".$args[0]);
-			exec("echo \"php /var/www/html/supportBox/SBInfo/server/suicideSquad.php ".trim($pid)." $args[0]\" | at -M now + 180min 2>&1", $atResult);
+			exec("echo \"php ".__DIR__."/suicideSquad.php ".trim($pid)." $args[0]\" | at -M now + 180min 2>&1", $atResult);
 			file_put_contents("/home/pi/pids/at_$args[0]", trim($atResult[1]));
 		}
 		
@@ -155,9 +155,9 @@ class OnAction {
     }
 	
 	public static function doUpdate(){
-		exec("cd /var/www/html && sudo -u pi git pull origin master 2>&1", $output1);
+		exec("cd ".realpath(__DIR__."/../../../")." && sudo -u pi git pull origin master 2>&1", $output1);
 		
-		exec("sudo -u pi php /var/www/html/supportBox/SBInfo/server/update.php", $output2);
+		exec("sudo -u pi php ".__DIR__."/update.php", $output2);
 		
 		exec("echo \"sudo /usr/bin/supervisorctl restart all\" | at -M now + 2min", $output3);
 		

@@ -5,7 +5,7 @@ require_once __DIR__."/OnAction.php";
 
 $C = SBUtil::dbConnection();
 
-$C->query("ALTER TABLE `SBForward` ADD `SBForwardURLAppend` VARCHAR(200) NOT NULL AFTER `SBForwardPort`");
+/*$C->query("ALTER TABLE `SBForward` ADD `SBForwardURLAppend` VARCHAR(200) NOT NULL AFTER `SBForwardPort`");
 
 $C->query("CREATE TABLE `SBNetwork` (
   `SBNetworkID` int(10) NOT NULL,
@@ -37,6 +37,6 @@ $C->query("ALTER TABLE `SBTunnel`
 $C->query("ALTER TABLE `SBTunnel`
   MODIFY `SBTunnelID` int(10) NOT NULL AUTO_INCREMENT;");
 
-$C->query("ALTER TABLE `SBTunnel` ADD `SBTunnelAktiv` TINYINT(1) NOT NULL AFTER `SBTunnelName`;");
+$C->query("ALTER TABLE `SBTunnel` ADD `SBTunnelAktiv` TINYINT(1) NOT NULL AFTER `SBTunnelName`;");*/
 
 echo "Done!";
