@@ -26,4 +26,4 @@ localhost                     &%%%&supportbox          &%%%&$password&%%%&suppor
 " > /var/www/html/supportBox/system/DBData/Installation.pfdb.php;
 
 sudo ln -s /var/www/html/supportBox/supportBox/SBInfo/server/supportbox.conf /etc/supervisor/conf.d/supportbox.conf
-cp /var/www/html/supportBox/supportBox/SBInfo/server/sudoers /etc/sudoers.d/010_supportbox
+sudo cp /var/www/html/supportBox/supportBox/SBInfo/server/sudoers /etc/sudoers.d/010_supportbox
