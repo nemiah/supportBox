@@ -28,6 +28,6 @@
 
 		<adminOnly>true</adminOnly>
 		
-		<version>0.8</version>
+		<version>0.9</version>
 	</plugin>
 </phynx>
