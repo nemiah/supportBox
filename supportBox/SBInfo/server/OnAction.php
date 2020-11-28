@@ -141,10 +141,15 @@ class OnAction {
 	
 	public static function getInfo(){
 		$uptime = shell_exec("uptime");
+		$df = shell_exec("df");
 		
 		$info = new stdClass();
 		$info->ip = SBUtil::localIP();
 		$info->uptime = trim($uptime);
+		$info->df = trim($df);
+		
+		if(file_exists("/var/www/html/open3A/current/applications"))
+			$info->open3A = shell_exec("php ".__DIR__."/open3AVersion.php");
 		
 		return $info;
 	}
