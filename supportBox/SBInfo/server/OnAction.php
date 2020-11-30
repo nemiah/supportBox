@@ -147,6 +147,8 @@ class OnAction {
 		$info->ip = SBUtil::localIP();
 		$info->uptime = trim($uptime);
 		$info->df = trim($df);
+		$info->php = phpversion();
+		$info->debian = shell_exec("cat /etc/debian_version");
 		
 		if(file_exists("/var/www/html/open3A/current/applications"))
 			$info->open3A = shell_exec("php ".__DIR__."/open3AVersion.php");
