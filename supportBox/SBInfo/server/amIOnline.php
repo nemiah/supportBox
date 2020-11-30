@@ -41,7 +41,8 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
 		
 		#SBUtil::log("Everything OK!");
 		amIOnline::$done = true;
-		amIOnline::$timer->cancel();
+		#amIOnline::$timer->cancel();
+		$connection->getClient()->getLoop()->cancelTimer(amIOnline::$timer);
 		
 		$connection->close();
     });
@@ -82,7 +83,8 @@ $connection->on('open', function (\Thruway\ClientSession $session) use ($connect
 		#SBUtil::log("Everything OK now!");
 		
 		amIOnline::$done = true;
-		amIOnline::$timer->cancel();
+		#amIOnline::$timer->cancel();
+		$connection->getClient()->getLoop()->cancelTimer(amIOnline::$timer);
 		
 		$connection->close();
     });
