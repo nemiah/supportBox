@@ -9,6 +9,10 @@ ZEIT=`date '+%H:%M'`;
 TEMPFILE="/home/pi/log/backupToUSB-$DATUM.tmp";
 echo "" > $TEMPFILE;
 
+/usr/bin/find /home/pi/log/ -maxdepth 1 -mtime +30 -exec rm -r {} \;
+
+echo "INFO: deleted old logs in /home/pi/log/" >> $TEMPFILE;
+
 echo "INFO: Start $DATUM $ZEIT" >> $TEMPFILE;
 
 mount | grep /backup > /dev/null
