@@ -171,7 +171,7 @@ class OnAction {
 			if(!count($logs)){
 				$info->backupLastLog = "";
 				$info->backupStatus = "ERROR";
-				$info->backupStatusMessage = "No backup logs!";
+				$info->backupMessage = "No backup logs!";
 			} else {
 				$current = current($logs);
 				$log = file_get_contents($current);
@@ -179,10 +179,18 @@ class OnAction {
 				$info->backupLastLog = $log;
 				if(strpos($log, "ERROR") === false){
 					$info->backupStatus = "OK";
-					$info->backupStatusMessage = "Alles gut";
+					$info->backupMessage = "Everything fine";
 				} else {
 					$info->backupStatus = "ERROR";
-					$info->backupStatusMessage = "A command failed, see log!";
+					$info->backupMessage = "A command failed, see log!";
+				}
+				
+				$lines = explode("\n", $log);
+				$last = preg_replace("/[^0-9\]/", "", $lines[count($lines) - 1]);
+				$info->backupTime = $last;
+				if(time() - $last > 3600 * 48){
+					$info->backupStatus = "ERROR";
+					$info->backupMessage = "Last backup older than two days";
 				}
 
 			}
