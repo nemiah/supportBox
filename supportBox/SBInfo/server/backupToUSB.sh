@@ -99,3 +99,6 @@ echo "INFO: umounted /backup" >> $TEMPFILE;
 
 ZEIT=`date '+%H:%M'`;
 echo "INFO: Done $DATUM $ZEIT" >> $TEMPFILE;
+
+SEKUNDEN=`date '+%s'`;
+echo "INFO: Stamp $SEKUNDEN" >> $TEMPFILE;
