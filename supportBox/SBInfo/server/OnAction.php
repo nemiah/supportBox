@@ -174,7 +174,7 @@ class OnAction {
 				$info->backupMessage = "No backup logs!";
 			} else {
 				$current = current($logs);
-				$log = file_get_contents($current);
+				$log = trim(file_get_contents($current));
 
 				$info->backupLastLog = $log;
 				if(strpos($log, "ERROR") === false){
