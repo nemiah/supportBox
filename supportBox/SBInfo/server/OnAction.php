@@ -187,15 +187,17 @@ class OnAction {
 				
 				$lines = explode("\n", $log);
 
+				$df = "";
 				$last = "";
 				foreach($lines AS $line){
-					if(strpos($line, "INFO: Stamp ") === false)
-						continue;
-
+					if(strpos($line, "INFO: Stamp ") !== false)
 						$last = $line;
-						break;
+					
+					if(strpos($line, "INFO: DF ") !== false)
+						$df = $line;
 				}
-
+				$info->backupDf = str_replace("INFO: DF ", "", $df);
+				
 				$last = preg_replace("/[^0-9]*/", "", $last);
 				
 				$info->backupTime = $last;
