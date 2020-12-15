@@ -11,7 +11,7 @@ echo "" > $TEMPFILE;
 
 echo "INFO: Start $DATUM $ZEIT" >> $TEMPFILE;
 
-/usr/bin/find /home/pi/log/ -maxdepth 1 -mtime +30 -exec rm -r {} \;
+/usr/bin/find /home/pi/log/* -maxdepth 1 -mtime +30 -exec rm -r {} \;
 
 echo "INFO: deleted old logs in /home/pi/log/" >> $TEMPFILE;
 
@@ -53,7 +53,7 @@ if [ ! -d /$OUTPUTDIR/files ]; then
 	exit 1;
 fi
 
-/usr/bin/find $OUTPUTDIR/files -maxdepth 1 -mtime +30 -exec rm -r {} \;
+/usr/bin/find $OUTPUTDIR/files/* -maxdepth 0 -mtime +30 -exec rm -r {} \;
 
 echo "INFO: deleted old files in $OUTPUTDIR/files" >> $TEMPFILE;
 
@@ -78,6 +78,8 @@ for db in $databases; do
                 mkdir $OUTPUTDIR/db/$db; fi
 
         /usr/bin/find $OUTPUTDIR/db/$db/* -mtime +30 -exec rm -r {} \; #Keep this one, the general one misses things or does too much
+
+		echo "INFO: deleted old files in $OUTPUTDIR/db/$db/" >> $TEMPFILE;
 
         sudo /usr/bin/mysqldump --opt --skip-lock-tables --single-transaction --hex-blob --force --ignore-table=mysql.event $db | gzip -9 --best > $OUTPUTDIR/db/$db/$db-$DATUM.sql.gz
 done
