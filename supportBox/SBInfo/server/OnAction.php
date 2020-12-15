@@ -186,7 +186,7 @@ class OnAction {
 				}
 				
 				$lines = explode("\n", $log);
-				$last = preg_replace("/[^0-9\]/", "", $lines[count($lines) - 1]);
+				$last = preg_replace("/[^0-9]/", "", $lines[count($lines) - 1]);
 				$info->backupTime = $last;
 				if(time() - $last > 3600 * 48){
 					$info->backupStatus = "ERROR";
