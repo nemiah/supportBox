@@ -186,7 +186,18 @@ class OnAction {
 				}
 				
 				$lines = explode("\n", $log);
-				$last = preg_replace("/[^0-9]/", "", $lines[count($lines) - 1]);
+
+				$last = "";
+				foreach($lines AS $line){
+					if(strpos($line, "INFO: Stamp ") === false)
+						continue;
+
+						$last = $line;
+						break;
+				}
+
+				$last = preg_replace("/[^0-9]*/", "", $last);
+				
 				$info->backupTime = $last;
 				if(time() - $last > 3600 * 48){
 					$info->backupStatus = "ERROR";
