@@ -154,6 +154,40 @@ class OnAction {
 		if(file_exists("/var/www/html/open3A/current/applications"))
 			$info->open3A = shell_exec("php ".__DIR__."/open3AVersion.php");
 		
+		if(file_exists("/home/pi/log")){
+			$logs = [];
+			$dir = new DirectoryIterator("/home/pi/log");
+			foreach ($dir as $file) {
+				if($file->isDot()) 
+					continue;
+				if($file->isDir()) 
+					continue;
+
+				$logs[] = $file->getPathname();
+			}
+
+			arsort($logs);
+
+			if(!count($logs)){
+				$info->backupLastLog = "";
+				$info->backupStatus = "ERROR";
+				$info->backupStatusMessage = "No backup logs!";
+			} else {
+				$current = current($logs);
+				$log = file_get_contents($current);
+
+				$info->backupLastLog = $log;
+				if(strpos($log, "ERROR") === false){
+					$info->backupStatus = "OK";
+					$info->backupStatusMessage = "Alles gut";
+				} else {
+					$info->backupStatus = "ERROR";
+					$info->backupStatusMessage = "A command failed, see log!";
+				}
+
+			}
+		}
+		
 		return $info;
 	}
 	
