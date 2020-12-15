@@ -11,6 +11,9 @@ echo "" > $TEMPFILE;
 
 echo "INFO: Start $DATUM $ZEIT" >> $TEMPFILE;
 
+SEKUNDEN=`date '+%s'`;
+echo "INFO: Stamp $SEKUNDEN" >> $TEMPFILE;
+
 /usr/bin/find /home/pi/log/* -maxdepth 1 -mtime +30 -exec rm -r {} \;
 
 echo "INFO: deleted old logs in /home/pi/log/" >> $TEMPFILE;
@@ -99,6 +102,3 @@ echo "INFO: umounted /backup" >> $TEMPFILE;
 
 ZEIT=`date '+%H:%M'`;
 echo "INFO: Done $DATUM $ZEIT" >> $TEMPFILE;
-
-SEKUNDEN=`date '+%s'`;
-echo "INFO: Stamp $SEKUNDEN" >> $TEMPFILE;
