@@ -89,7 +89,8 @@ done
 
 date '+%Y-%m-%d' > $OUTPUTDIR/altesDatum;
 
-
+DF=`df /backup/ | sed 1d`
+echo "INFO: DF $DF" >> $TEMPFILE;
 
 umount /backup
 
