@@ -147,7 +147,10 @@ class OnAction {
 		$info->ip = SBUtil::localIP();
 		$info->uptime = trim($uptime);
 		$info->df = trim($df);
+		
 		$info->php = phpversion();
+		if(file_exists("/var/www/html/open3A/current/applications"))
+			$info->open3A = shell_exec("php ".__DIR__."/open3AVersion.php");
 		
 		$osC = new stdClass();
 		$osC->debian = trim(shell_exec("cat /etc/debian_version"));
@@ -178,11 +181,8 @@ class OnAction {
 				$smartC->$smartValue = $cols[9];
 			}
 			
-			$info->smart = $smartC;
+			$info->smart_sda = $smartC;
 		}
-		
-		if(file_exists("/var/www/html/open3A/current/applications"))
-			$info->open3A = shell_exec("php ".__DIR__."/open3AVersion.php");
 		
 		if(file_exists("/home/pi/log")){
 			$logs = [];
@@ -198,19 +198,21 @@ class OnAction {
 
 			arsort($logs);
 
+			$backupC = new stdClass();
+			
 			if(!count($logs)){
-				$info->backupLastLog = "No backup log!";
-				$info->backupStatus = "ERROR";
+				$backupC->backupLastLog = "No backup log!";
+				$backupC->backupStatus = "ERROR";
 			} else {
 				$current = current($logs);
 				$log = trim(file_get_contents($current));
 
-				$info->backupLastLog = $log;
+				$backupC->backupLastLog = $log;
 				if(strpos($log, "ERROR") === false){
-					$info->backupStatus = "OK";
-				} else {
-					$info->backupStatus = "ERROR";
-				}
+					$backupC->backupStatus = "OK";
+				} else 
+					$backupC->backupStatus = "ERROR";
+				
 				
 				$lines = explode("\n", $log);
 
@@ -223,17 +225,19 @@ class OnAction {
 					if(strpos($line, "INFO: DF ") !== false)
 						$df = $line;
 				}
-				$info->backupDf = str_replace("INFO: DF ", "", $df);
+				$backupC->backupDf = str_replace("INFO: DF ", "", $df);
 				
-				$last = preg_replace("/[^0-9]*/", "", $last);
+				$backupC = preg_replace("/[^0-9]*/", "", $last);
 				
-				$info->backupTime = $last;
+				$backupC->backupTime = $last;
 				if(time() - $last > 3600 * 48){
-					$info->backupStatus = "ERROR";
+					$backupC->backupStatus = "ERROR";
 					#$info->backupMessage = "Last backup older than two days";
 				}
 
 			}
+			
+			$info->backup = $backupC;
 		}
 		
 		return $info;
