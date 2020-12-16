@@ -201,17 +201,17 @@ class OnAction {
 			$backupC = new stdClass();
 			
 			if(!count($logs)){
-				$backupC->backupLastLog = "No backup log!";
-				$backupC->backupStatus = "ERROR";
+				$backupC->lastLog = "No backup log!";
+				$backupC->status = "ERROR";
 			} else {
 				$current = current($logs);
 				$log = trim(file_get_contents($current));
 
 				$backupC->backupLastLog = $log;
 				if(strpos($log, "ERROR") === false){
-					$backupC->backupStatus = "OK";
+					$backupC->status = "OK";
 				} else 
-					$backupC->backupStatus = "ERROR";
+					$backupC->status = "ERROR";
 				
 				
 				$lines = explode("\n", $log);
@@ -225,13 +225,13 @@ class OnAction {
 					if(strpos($line, "INFO: DF ") !== false)
 						$df = $line;
 				}
-				$backupC->backupDf = str_replace("INFO: DF ", "", $df);
+				$backupC->df = str_replace("INFO: DF ", "", $df);
 				
-				$backupC = preg_replace("/[^0-9]*/", "", $last);
+				$last = preg_replace("/[^0-9]*/", "", $last);
 				
 				$backupC->backupTime = $last;
 				if(time() - $last > 3600 * 48){
-					$backupC->backupStatus = "ERROR";
+					$backupC->status = "ERROR";
 					#$info->backupMessage = "Last backup older than two days";
 				}
 
