@@ -156,6 +156,7 @@ class OnAction {
 		
 		$smart = trim(shell_exec("sudo smartctl -a /dev/sda"));
 		if($smart != ""){
+			$smartC = new stdClass();
 			$result = substr($smart, strpos($smart, "RAW_VALUE") + 10);
 			$lines = explode("\n", $result);
 			foreach($lines AS $line){
@@ -168,8 +169,10 @@ class OnAction {
 					
 				$smartValue = $cols[0]."_".$cols[1];
 
-				$info->$smartValue = $cols[9];
+				$smartC->$smartValue = $cols[9];
 			}
+			
+			$info->smart = $smartC;
 		}
 		
 		if(file_exists("/var/www/html/open3A/current/applications"))
