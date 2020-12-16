@@ -146,7 +146,6 @@ class OnAction {
 		$info = new stdClass();
 		$info->ip = SBUtil::localIP();
 		$info->uptime = trim($uptime);
-		$info->df = trim($df);
 		
 		$softwareC = new stdClass();
 		$softwareC->php = phpversion();
@@ -163,6 +162,7 @@ class OnAction {
 		$hardwareC->serial = SBUtil::serial();
 		$hardwareC->model = SBUtil::model();
 		$hardwareC->cpuTemp = str_replace(["temp=", "'C"], "", trim(shell_exec("/opt/vc/bin/vcgencmd measure_temp")));
+		$hardwareC->df = trim($df);
 		$info->hardware = $hardwareC;
 		
 		$smart = trim(shell_exec("sudo smartctl -a /dev/sda"));
