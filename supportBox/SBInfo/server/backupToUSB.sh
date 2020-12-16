@@ -89,13 +89,13 @@ for db in $databases; do
  		RESDUMP=${PIPESTATUS[0]};
  		RESGZIP=${PIPESTATUS[1]};
  
-        if [ $RESDUMP -ne 0 ]; then
-        	echo "ERROR: mysqldump $db failed!" >> $TEMPFILE;
+        if [ $RESGZIP -ne 0 ]; then
+        	echo "ERROR: gzip $db failed!" >> $TEMPFILE;
 			exit 2;
 		fi
 		
-        if [ $RESGZIP -ne 0 ]; then
-        	echo "ERROR: gzip $db failed!" >> $TEMPFILE;
+        if [ $RESDUMP -ne 0 ]; then
+        	echo "ERROR: mysqldump $db failed!" >> $TEMPFILE;
 			exit 2;
 		fi
         
