@@ -231,7 +231,7 @@ class OnAction {
 				
 				$last = preg_replace("/[^0-9]*/", "", $last);
 				
-				$backupC->backupTime = $last;
+				$backupC->time = $last;
 				if(time() - $last > 3600 * 48){
 					$backupC->status = "ERROR";
 					#$info->backupMessage = "Last backup older than two days";
