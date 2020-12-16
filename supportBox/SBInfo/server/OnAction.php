@@ -148,11 +148,17 @@ class OnAction {
 		$info->uptime = trim($uptime);
 		$info->df = trim($df);
 		$info->php = phpversion();
-		$info->debian = trim(shell_exec("cat /etc/debian_version"));
-		$info->linux = trim(shell_exec("uname -a"));
-		$info->serial = SBUtil::serial();
-		$info->model = SBUtil::model();
-		$info->cpuTemp = str_replace(["temp=", "'C"], "", trim(shell_exec("/opt/vc/bin/vcgencmd measure_temp")));
+		
+		$osC = new stdClass();
+		$osC->debian = trim(shell_exec("cat /etc/debian_version"));
+		$osC->linux = trim(shell_exec("uname -a"));
+		$info->os = $osC;
+		
+		$hardwareC = new stdClass();
+		$hardwareC->serial = SBUtil::serial();
+		$hardwareC->model = SBUtil::model();
+		$hardwareC->cpuTemp = str_replace(["temp=", "'C"], "", trim(shell_exec("/opt/vc/bin/vcgencmd measure_temp")));
+		$info->hardware = $hardwareC;
 		
 		$smart = trim(shell_exec("sudo smartctl -a /dev/sda"));
 		if($smart != ""){
