@@ -148,9 +148,11 @@ class OnAction {
 		$info->uptime = trim($uptime);
 		$info->df = trim($df);
 		
-		$info->php = phpversion();
+		$softwareC = new stdClass();
+		$softwareC->php = phpversion();
 		if(file_exists("/var/www/html/open3A/current/applications"))
-			$info->open3A = shell_exec("php ".__DIR__."/open3AVersion.php");
+			$softwareC->open3A = shell_exec("php ".__DIR__."/open3AVersion.php");
+		$info->software = $softwareC;
 		
 		$osC = new stdClass();
 		$osC->debian = trim(shell_exec("cat /etc/debian_version"));
