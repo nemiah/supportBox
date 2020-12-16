@@ -86,16 +86,15 @@ for db in $databases; do
 
         sudo /usr/bin/mysqldump --opt --skip-lock-tables --single-transaction --hex-blob --force --ignore-table=mysql.event $db | gzip -9 --best > $OUTPUTDIR/db/$db/$db-$DATUM.sql.gz
  
- 		RESDUMP=${PIPESTATUS[0]};
- 		RESGZIP=${PIPESTATUS[1]};
- 
-        if [ $RESGZIP -ne 0 ]; then
-        	echo "ERROR: gzip $db failed!" >> $TEMPFILE;
+ 		DBSTATUS=( "${PIPESTATUS[@]}" )
+		
+        if [ ${DBSTATUS[0]} -ne 0 ]; then
+        	echo "ERROR: mysqldump $db failed!" >> $TEMPFILE;
 			exit 2;
 		fi
-		
-        if [ $RESDUMP -ne 0 ]; then
-        	echo "ERROR: mysqldump $db failed!" >> $TEMPFILE;
+ 
+        if [ ${DBSTATUS[1]} -ne 0 ]; then
+        	echo "ERROR: gzip $db failed!" >> $TEMPFILE;
 			exit 2;
 		fi
         
