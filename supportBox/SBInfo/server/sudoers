@@ -10,4 +10,4 @@ www-data   ALL=(ALL) NOPASSWD: /usr/sbin/postalias
 www-data   ALL=(pi) NOPASSWD: /usr/bin/git
 www-data   ALL=(pi) NOPASSWD: /usr/bin/php
 www-data   ALL=(ALL) NOPASSWD: /sbin/reboot
-
+www-data   ALL=(ALL) NOPASSWD: /usr/sbin/smartctl

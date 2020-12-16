@@ -27,10 +27,33 @@ class SBUtil {
 
 				$info[trim($e[0])] = trim($e[1]);
 		}
+		
 		if(isset($info["Serial"]))
 			return $info["Serial"];
 
 		return rand(10000, 99999);
+	}
+	
+	public static function model() {
+		$cpuinfo = file_get_contents("/proc/cpuinfo");
+		if(file_exists("/home/pi/cpuinfo"))
+			$cpuinfo = file_get_contents("/home/pi/cpuinfo");
+		
+		$ex = explode("\n", trim($cpuinfo));
+
+		$info = array();
+		foreach($ex AS $line){
+				$e = explode(":", $line);
+				if(count($e) < 2)
+						continue;
+
+				$info[trim($e[0])] = trim($e[1]);
+		}
+		
+		if(isset($info["Model"]))
+			return $info["Model"];
+
+		return "Raspberry Pi X";
 	}
 	
 	public static function localIP(){

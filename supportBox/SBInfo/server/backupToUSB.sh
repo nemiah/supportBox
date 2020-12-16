@@ -85,6 +85,17 @@ for db in $databases; do
 		echo "INFO: deleted old files in $OUTPUTDIR/db/$db/" >> $TEMPFILE;
 
         sudo /usr/bin/mysqldump --opt --skip-lock-tables --single-transaction --hex-blob --force --ignore-table=mysql.event $db | gzip -9 --best > $OUTPUTDIR/db/$db/$db-$DATUM.sql.gz
+ 
+        if [ ${PIPESTATUS[0]} -ne 0 ]; then
+        	echo "ERROR: mysqldump $db failed!" >> $TEMPFILE;
+			exit 2;
+		fi
+		
+        if [ ${PIPESTATUS[1]} -ne 0 ]; then
+        	echo "ERROR: gzip $db failed!" >> $TEMPFILE;
+			exit 2;
+		fi
+        
 done
 
 date '+%Y-%m-%d' > $OUTPUTDIR/altesDatum;

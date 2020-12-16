@@ -148,8 +148,29 @@ class OnAction {
 		$info->uptime = trim($uptime);
 		$info->df = trim($df);
 		$info->php = phpversion();
-		$info->debian = shell_exec("cat /etc/debian_version");
-		$info->linux = shell_exec("uname -a");
+		$info->debian = trim(shell_exec("cat /etc/debian_version"));
+		$info->linux = trim(shell_exec("uname -a"));
+		$info->serial = SBUtil::serial();
+		$info->model = SBUtil::model();
+		$info->cpuTemp = str_replace(["temp=", "'C"], "", trim(shell_exec("/opt/vc/bin/vcgencmd measure_temp")));
+		
+		$smart = trim(shell_exec("sudo smartctl -a /dev/sda"));
+		if($smart != ""){
+			$result = substr($smart, strpos($smart, "RAW_VALUE") + 10);
+			$lines = explode("\n", $result);
+			foreach($lines AS $line){
+				if(trim($line) == "")
+					break;
+				
+				$cols = preg_split('/\s+/', trim($line));
+				if($cols[1] == "Unknown_Attribute")
+					continue;
+					
+				$smartValue = $cols[0]."_".$cols[1];
+
+				$info->$smartValue = $cols[9];
+			}
+		}
 		
 		if(file_exists("/var/www/html/open3A/current/applications"))
 			$info->open3A = shell_exec("php ".__DIR__."/open3AVersion.php");
@@ -169,9 +190,8 @@ class OnAction {
 			arsort($logs);
 
 			if(!count($logs)){
-				$info->backupLastLog = "";
+				$info->backupLastLog = "No backup log!";
 				$info->backupStatus = "ERROR";
-				$info->backupMessage = "No backup logs!";
 			} else {
 				$current = current($logs);
 				$log = trim(file_get_contents($current));
@@ -179,10 +199,8 @@ class OnAction {
 				$info->backupLastLog = $log;
 				if(strpos($log, "ERROR") === false){
 					$info->backupStatus = "OK";
-					$info->backupMessage = "Everything fine";
 				} else {
 					$info->backupStatus = "ERROR";
-					$info->backupMessage = "A command failed, see log!";
 				}
 				
 				$lines = explode("\n", $log);
@@ -203,7 +221,7 @@ class OnAction {
 				$info->backupTime = $last;
 				if(time() - $last > 3600 * 48){
 					$info->backupStatus = "ERROR";
-					$info->backupMessage = "Last backup older than two days";
+					#$info->backupMessage = "Last backup older than two days";
 				}
 
 			}
