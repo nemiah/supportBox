@@ -207,7 +207,7 @@ class OnAction {
 				$current = current($logs);
 				$log = trim(file_get_contents($current));
 
-				$backupC->backupLastLog = $log;
+				$backupC->lastLog = $log;
 				if(strpos($log, "ERROR") === false){
 					$backupC->status = "OK";
 				} else 
