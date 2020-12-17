@@ -43,7 +43,7 @@ echo "Leere sessions-Verzeichnis\n";
 exec("sudo bash -c 'rm /var/lib/php/sessions/sess_*'");
 
 echo "Setze Berechtigungen…\n";
-exec("sudo chmod 666 /var/www/html/system/DBData/Installation.pfdb.php");
+exec("sudo chmod 666 ".realpath(__DIR__."/../../../system/DBData/Installation.pfdb.php"));
 
 echo "Setze Passwort von Benutzer 'pi' auf 'pi'\n";
 shell_exec('echo "pi:pi" | sudo /usr/sbin/chpasswd');
