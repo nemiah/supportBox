@@ -170,7 +170,7 @@ class OnAction {
 			$smartC = new stdClass();
 			preg_match("/SMART overall-health self-assessment test result: ([A-Z0-9a-z]*)/", $smart, $matches);
 			
-			$smartC->selfAssessment = $matches[1];
+			$smartC->self_assessment = $matches[1];
 			
 			$result = substr($smart, strpos($smart, "RAW_VALUE") + 10);
 			$lines = explode("\n", $result);
