@@ -168,7 +168,7 @@ class OnAction {
 		$smart = trim(shell_exec("sudo smartctl -a /dev/sda"));
 		if($smart != ""){
 			$smartC = new stdClass();
-			preg_match("SMART overall-health self-assessment test result: ([A-Z0-9a-z]*)", $smart, $matches);
+			preg_match("/SMART overall-health self-assessment test result: ([A-Z0-9a-z]*)/", $smart, $matches);
 			
 			$smartC->selfAssessment = $matches[1];
 			
