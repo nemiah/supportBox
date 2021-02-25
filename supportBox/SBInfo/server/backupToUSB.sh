@@ -52,6 +52,10 @@ if [ ! -d /$OUTPUTDIR/files ]; then
 	mkdir /$OUTPUTDIR/files;
 	mkdir /$OUTPUTDIR/db;
 	date '+%Y-%m-%d' > $OUTPUTDIR/altesDatum;
+	
+	DF=`df /backup/ | sed 1d`
+	echo "INFO: DF $DF" >> $TEMPFILE;
+	
 	umount /backup
 	exit 1;
 fi
