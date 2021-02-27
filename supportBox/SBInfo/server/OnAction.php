@@ -233,12 +233,11 @@ class OnAction {
 					if(strpos($line, "INFO: DF ") !== false)
 						$df = $line;
 					
-					if(strpos($line, "INFO: LS ") !== false){
-						$lsCollect = true;
-					}
-					
 					if($lsCollect AND strpos($line, "INFO") !== false)
 						$lsCollect = false;
+					
+					if(strpos($line, "INFO: LS ") !== false)
+						$lsCollect = true;
 					
 					if($lsCollect)
 						$ls .= $line;
