@@ -109,6 +109,9 @@ date '+%Y-%m-%d' > $OUTPUTDIR/altesDatum;
 DF=`df /backup/ | sed 1d`
 echo "INFO: DF $DF" >> $TEMPFILE;
 
+LS=`ls -l /backup/files/`
+echo "INFO: LS $DF" >> $TEMPFILE;
+
 umount /backup
 
 if [ $? -ne 0 ]; then
