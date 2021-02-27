@@ -224,14 +224,27 @@ class OnAction {
 
 				$df = "";
 				$last = "";
+				$ls = "";
+				$lsCollect = false;
 				foreach($lines AS $line){
 					if(strpos($line, "INFO: Stamp ") !== false)
 						$last = $line;
 					
 					if(strpos($line, "INFO: DF ") !== false)
 						$df = $line;
+					
+					if(strpos($line, "INFO: LS ") !== false){
+						$lsCollect = true;
+					}
+					
+					if($lsCollect AND strpos($line, "INFO") !== false)
+						$lsCollect = false;
+					
+					if($lsCollect)
+						$ls .= $line;
 				}
 				$backupC->df = str_replace("INFO: DF ", "", $df);
+				$backupC->ls = str_replace("INFO: LS ", "", $ls);
 				
 				$last = preg_replace("/[^0-9]*/", "", $last);
 				
