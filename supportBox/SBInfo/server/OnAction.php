@@ -242,10 +242,33 @@ class OnAction {
 					}
 					
 					if($lsCollect)
-						$ls .= $line."\n";
+						$ls .= $line;
 				}
 				$backupC->df = str_replace("INFO: DF ", "", $df);
 				$backupC->ls = str_replace("INFO: LS ", "", $ls);
+				
+				$dates = [];
+				$ex = explode("\n", $ls);
+				foreach($ex AS $line){
+					if(preg_match("/([0-9]{4}-[0-9]{2}-[0-9]{2})/", $line, $matches))
+						$dates[] = $matches[1];
+				}
+
+				rsort($dates);
+
+				$date = new DateTime($dates[0]);
+				unset($dates[0]);
+				$date->sub(new DateInterval("P1D"));
+				$consecutive = 1;
+				foreach($dates AS $dateLine){
+					if(strtotime($dateLine) == $date->getTimestamp()){
+						$consecutive++;
+						$date->sub(new DateInterval("P1D"));
+					} else
+						break;
+				}
+				
+				$backupC->consecutive = $consecutive;
 				
 				$last = preg_replace("/[^0-9]*/", "", $last);
 				
