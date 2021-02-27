@@ -236,8 +236,10 @@ class OnAction {
 					if($lsCollect AND strpos($line, "INFO") !== false)
 						$lsCollect = false;
 					
-					if(strpos($line, "INFO: LS ") !== false)
+					if(strpos($line, "INFO: LS ") !== false){
 						$lsCollect = true;
+						continue;
+					}
 					
 					if($lsCollect)
 						$ls .= $line."\n";
