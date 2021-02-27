@@ -110,7 +110,7 @@ DF=`df /backup/ | sed 1d`
 echo "INFO: DF $DF" >> $TEMPFILE;
 
 LS=`ls -l /backup/files/`
-echo "INFO: LS $DF" >> $TEMPFILE;
+echo "INFO: LS $LS" >> $TEMPFILE;
 
 umount /backup
 
