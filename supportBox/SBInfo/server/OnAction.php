@@ -240,7 +240,7 @@ class OnAction {
 						$lsCollect = true;
 					
 					if($lsCollect)
-						$ls .= $line;
+						$ls .= $line."\n";
 				}
 				$backupC->df = str_replace("INFO: DF ", "", $df);
 				$backupC->ls = str_replace("INFO: LS ", "", $ls);
