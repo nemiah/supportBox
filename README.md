@@ -1,6 +1,6 @@
 # supportBox
 
-	Raspbian Buster Installation:
+Raspbian Buster Installation:
 
 	sudo apt update
 	sudo apt dist-upgrade
